@@ -35,13 +35,13 @@ src/
   main.ts              # Plugin entry — onload/onunload only, no feature logic
   settings.ts          # PluginSettings interface + DEFAULT_SETTINGS
   types.ts             # Exercise, Template, Workout TypeScript types
-  commands/            # addCommand() registrations
   ui/
-    views/             # ItemView subclasses (Active Workout, Exercise List, History)
-    modals/            # Modal subclasses (Finish Workout diff, Exercise Picker)
-    components/        # Reusable React components
-  services/            # Vault I/O, markdown parsing, business logic
-  utils/               # ID generation, date helpers, pure utilities
+    context.ts         # React PluginContext + usePlugin()
+    views/             # ReactItemView subclasses (exercises, templates, active, history)
+    modals/            # React modal base, prompts, template editor, finish flow
+    hooks/             # useActiveWorkout (autosave), useNow (ticking clock)
+  services/            # Vault I/O, serializer/parser, stores, summary, diff
+  utils/               # ID generation, date helpers, constants
 manifest.json          # Plugin metadata — never change `id` after release
 versions.json          # Maps plugin version → minimum Obsidian app version
 styles.css             # Plugin-scoped CSS (dark gym-UI theme lives here)
@@ -52,7 +52,7 @@ tsconfig.json          # jsx:react-jsx, moduleResolution:bundler, strict:true
 ## Obsidian plugin conventions
 
 - Entry point is `src/main.ts` → compiled to `main.js` at repo root
-- `manifest.json` `id` field (`"gymmd"`) must match the plugin folder name in the vault
+- `manifest.json` `id` field (`"gymmd"`) must match the plugin folder name in the vault; `minAppVersion` is `1.13.0` (uses `revealLeaf`, `trashFile`, `setDestructive`)
 - All commands need stable IDs — never rename after first release
 - Register every listener via `this.registerEvent / registerDomEvent / registerInterval` so they're cleaned up on plugin unload
 - Settings persist via `this.loadData()` / `this.saveData()`
@@ -76,13 +76,21 @@ Core invariants (see PLAN.md §11):
 - **Timestamps are quoted ISO-8601 strings**; timer state derives from the stored `current_phase_started`, never a running interval.
 - **Active Workout UI is dark-theme-only**, scoped via CSS class, independent of the vault theme.
 
-## Build order (from PLAN.md §10)
+## Implementation status
 
-1. Markdown parser/serializer (`src/services/` — highest risk, test first)
-2. Exercise CRUD
-3. Template builder UI
-4. Workout creation from template
-5. Active Workout view (stopwatch Tab 1 + all-sets Tab 2)
-6. Finish flow (diff against template, modal, file move)
-7. History view
-8. Settings UI
+All build-order steps from PLAN.md §10 are implemented (v0.1.0):
+
+1. ✅ Serializer + body renderer (`services/serializer.ts`) + frontmatter reader (`services/parse.ts`) — write-only body, no table parsing
+2. ✅ Exercise CRUD (`ui/views/exercise-list-view.tsx`, `services/exercise-store.ts`)
+3. ✅ Template builder (`ui/modals/template-editor.tsx`, `services/template-store.ts`)
+4. ✅ Workout creation from template (`main.startWorkout`, `services/workout-store.ts`) with resume/abandon prompt
+5. ✅ Active Workout view (`ui/views/active-workout-view.tsx`) — stopwatch + all-sets tabs, debounced autosave
+6. ✅ Finish flow (`ui/modals/finish-flow.ts`, `services/diff.ts`)
+7. ✅ History view (`ui/views/history-view.tsx`)
+8. ✅ Settings (`settings.ts`)
+
+Not yet done: unit tests (the serializer/diff are pure and the obvious first targets); manual testing inside an Obsidian vault.
+
+## Build commands
+
+`npm run build` runs `tsc -noEmit` then esbuild (both must stay green). `npm run lint` runs eslint with `eslint-plugin-obsidianmd`. Both pass clean as of v0.1.0.
