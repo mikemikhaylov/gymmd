@@ -189,7 +189,6 @@ exercises:
         done: true
         started: "2026-06-20T18:02:11"
         duration_seconds: 42
-        rpe:
       - set: 2
         planned_reps: 8
         planned_weight: 65
@@ -198,7 +197,6 @@ exercises:
         done: true
         started: "2026-06-20T18:05:30"
         duration_seconds: 38
-        rpe:
       - set: 3
         planned_reps: 8
         planned_weight: 65
@@ -207,7 +205,6 @@ exercises:
         done: true
         started: "2026-06-20T18:09:02"
         duration_seconds: 45
-        rpe:
   - exercise_id: ex-88aa11
     name: Overhead Press
     order: 2
@@ -220,7 +217,6 @@ exercises:
         done: true
         started: "2026-06-20T18:14:55"
         duration_seconds: 35
-        rpe:
       - set: 2
         planned_reps: 8
         planned_weight: 32.5
@@ -229,7 +225,6 @@ exercises:
         done: false
         started:
         duration_seconds:
-        rpe:
       - set: 3
         planned_reps: 8
         planned_weight: 32.5
@@ -238,7 +233,6 @@ exercises:
         done: false
         started:
         duration_seconds:
-        rpe:
   - exercise_id: ex-9b2c40
     name: Tricep Pushdown
     order: 3
@@ -251,7 +245,6 @@ exercises:
         done: false
         started:
         duration_seconds:
-        rpe:
       - set: 2
         planned_reps: 12
         planned_weight: 20
@@ -260,7 +253,6 @@ exercises:
         done: false
         started:
         duration_seconds:
-        rpe:
       - set: 3
         planned_reps: 10
         planned_weight: 22.5
@@ -269,7 +261,6 @@ exercises:
         done: false
         started:
         duration_seconds:
-        rpe:
 ---
 
 # Push Day — 2026-06-20
@@ -300,18 +291,18 @@ Notes:
 - **`status`** (`in_progress` → `completed`) is authoritative; the plugin moves the file between folders to match, via `app.fileManager.renameFile()` (preserves any wikilinks pointing at it).
 - **`current_phase_started`**: the single timestamp the live stopwatch needs. Present only while `in_progress`, cleared on completion. On plugin load, if a workout has `status: in_progress`, the timer is recomputed as `Date.now() - current_phase_started` — not from a running interval, so it's correct immediately after reopening Obsidian regardless of how long it was closed.
 - **Planned vs actual columns both present** on every set row — plan is fixed when the workout starts (or copied from the template), actual is filled in live and freely editable afterward, anywhere, on any set (past, current, or future).
-- **Adding sets mid-workout**: plugin appends a new entry to both the `sets` array and the table row for that exercise; `planned_*` can be left blank or mirror the actual values for ad-hoc sets.
-- **`rpe`** field included now (nullable, optional) so it's available from day one without needing a schema migration later if you start using it.
+- **Adding sets mid-workout**: plugin appends a new entry to both the `sets` array and the table row for that exercise; `planned_*` can be left blank or mirror the actual values for ad-hoc sets. No new exercises can be added mid-workout — only new sets to exercises already in the workout.
+- **Incomplete sets on finish**: if the workout ends while some sets are `done: false`, those sets are kept in the completed file as-is (with blank actuals). This records the intended plan faithfully — a cut-short workout is not the same as a different workout. The template is NOT pruned to match what was actually done.
 - Frontmatter summary fields (`total_volume_kg`, `total_sets_completed`, etc.) are recomputed by the plugin on every change.
 
 ---
 
 ## 6. Live "Active Workout" UI
 
-Two tabs, dark theme (forced via a scoped CSS class, independent of vault theme), large tap targets for phone use in the gym.
+Two tabs, **dark theme only** — forced via a scoped CSS class on the view container, completely independent of the vault's current theme. There is no light mode variant; the plugin always renders dark. Large tap targets for phone use in the gym.
 
 ### Tab 1 — Stopwatch
-- One large centered timer. Resets to `0` and starts counting on **every** press of Start Set or End Set (no separate "rest" vs "set" mode to track — single continuous counter as specified).
+- One large centered timer. Sits at `0:00` until the first **Start Set** press. Resets to `0` and restarts on **every** press of Start Set or End Set (no separate "rest" vs "set" mode — single continuous counter). `current_phase_started` is written to the file on every reset.
 - Current exercise name, "Set X of Y" indicator.
 - Planned weight/reps shown large; become editable the moment **Start Set** is pressed (pre-filled from planned values).
 - One big toggle button:
@@ -322,21 +313,24 @@ Two tabs, dark theme (forced via a scoped CSS class, independent of vault theme)
 ### Tab 2 — All Sets
 - Sets grouped by exercise, in order, each row showing planned vs actual, done/not-done state.
 - Inline editing of reps/weight on any set, completed or not.
-- Add new set to any exercise block.
+- Add new set to any exercise block (ad-hoc sets — `planned_*` mirrors actual on entry).
+- Delete a set from any exercise block.
 - Reorder exercise blocks and reorder sets within a block (simple up/down controls — no drag-and-drop dependency needed).
+- **No adding new exercises mid-workout.** The exercise list is fixed at workout creation time. If the exercise list needs changing, finish or abandon and create a new workout.
 
 ---
 
 ## 7. Finish workout flow
 
-1. On "Finish Workout", diff the workout's current exercises/sets against the **template's current state** (weights, reps, set counts, exercise order, exercises added/removed).
-2. If no diff → finish immediately, no prompt.
-3. If diff exists → modal listing the changes, with options:
-    - **Update Template** — rewrite the template file's body + frontmatter to match what was actually performed.
+1. On "Finish Workout", diff **only the completed sets** (`done: true`) in the workout against the corresponding sets in the **template's current state** — comparing weights, reps, set counts (of completed sets), and exercise order.
+2. Incomplete sets (`done: false`) are excluded from the diff entirely. A workout cut short due to an interruption should not suggest removing sets from the template.
+3. If no diff among completed sets → finish immediately, no prompt.
+4. If diff exists → modal listing the changes, with options:
+    - **Update Template** — rewrite the template file's body + frontmatter to match what was actually performed in the completed sets. Set counts in the template reflect the number of sets completed, not the number planned.
     - **Keep Template As-Is** — finish without touching the template.
     - **Cancel** — return to the workout.
-4. If the workout wasn't created from a template, this step is skipped (optionally offer "Save as new template" instead).
-5. On finish: `status → completed`, `completed`/`duration_minutes` finalized, `current_phase_started` cleared, file moved from `Active/` to `Completed/`.
+5. If the workout wasn't created from a template, this step is skipped (optionally offer "Save as new template" instead).
+6. On finish: `status → completed`, `completed`/`duration_minutes` finalized, `current_phase_started` cleared, file moved from `Active/` to `Completed/`. Incomplete sets remain in the file with blank actuals and `done: false`.
 
 ---
 
@@ -344,6 +338,7 @@ Two tabs, dark theme (forced via a scoped CSS class, independent of vault theme)
 
 - Every change to the active workout autosaves (debounced ~300–500ms) via `app.vault.process()` — no explicit "save" button during the workout.
 - On plugin load, check for a workout with `status: in_progress` (tracked via a small plugin-settings pointer or by scanning `Active/`, which should only ever contain 0 or 1 file). If found, the Active Workout view can be reopened directly via ribbon icon or command, landing back exactly where you left off, with the timer correctly recalculated from `current_phase_started`.
+- If the user tries to **start a new workout** while one is already `in_progress`, show a prompt: **"A workout is already in progress — resume it or abandon it?"** Abandon discards the active file (moves it to a trash/abandoned state or deletes it) and allows a new workout to begin. Resume opens the existing active workout view.
 
 ---
 
@@ -376,7 +371,7 @@ Per-exercise history across all workouts (e.g. "all Bench Press sets over the la
 6. **Finish flow** — diff against template, confirmation modal, file move to `Completed/`.
 7. **History view** — list of completed workouts, read-only or editable detail view.
 8. **Settings** — configurable folder paths.
-9. *(Later)* Exercise progress view / DataviewJS examples, RPE usage, bodyweight tracking, AI-coach-facing export helpers.
+9. *(Later)* Exercise progress view / DataviewJS examples, bodyweight tracking, AI-coach-facing export helpers.
 
 ---
 
@@ -387,4 +382,4 @@ Per-exercise history across all workouts (e.g. "all Bench Press sets over the la
 - **Timer correctness via stored timestamps, not running intervals** — survives Obsidian restarts without drift.
 - **File location follows `status`, not the other way around** — frontmatter is the source of truth, folder placement is a plugin-managed consequence.
 - **No deletion of Exercises** — archive only, to keep historical Workout/Template data intact.
-- **Body tables are genuinely hand-editable** — a user (or AI agent) can open any file and edit numbers directly in Obsidian; the plugin re-syncs frontmatter from the body on next read/save.
+- **Sync direction: frontmatter → body** — frontmatter is the single source of truth; the plugin always writes frontmatter first and regenerates the body tables from it. Body tables are a human-readable view, not a second source of truth. If a user or AI agent wants to edit data outside the plugin, they should edit the YAML frontmatter directly (not the markdown table). See §1 notes for the reasoning.
