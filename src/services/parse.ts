@@ -3,6 +3,7 @@ import {
 	TYPE_TEMPLATE,
 	TYPE_WORKOUT,
 } from '../utils/constants';
+import { entryUid } from '../utils/id';
 import type {
 	Exercise,
 	Template,
@@ -87,6 +88,7 @@ function templateSet(s: Rec): TemplateSet {
 
 function templateExercise(e: Rec, index: number): TemplateExercise {
 	return {
+		uid: asString(e.uid) || entryUid(),
 		exercise_id: asString(e.exercise_id),
 		name: asString(e.name),
 		order: asNumber(e.order, index + 1),
@@ -129,6 +131,7 @@ function workoutSet(s: Rec): WorkoutSet {
 
 function workoutExercise(e: Rec, index: number): WorkoutExercise {
 	return {
+		uid: asString(e.uid) || entryUid(),
 		exercise_id: asString(e.exercise_id),
 		name: asString(e.name),
 		order: asNumber(e.order, index + 1),

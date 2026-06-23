@@ -74,7 +74,8 @@ export function serializeTemplate(tpl: Template): string {
 		'exercises:',
 	];
 	for (const ex of tpl.exercises) {
-		fm.push(`  - ${line(0, 'exercise_id', ex.exercise_id).trimStart()}`);
+		fm.push(`  - ${line(0, 'uid', ex.uid).trimStart()}`);
+		fm.push(line(2, 'exercise_id', ex.exercise_id));
 		fm.push(line(2, 'name', ex.name));
 		fm.push(line(2, 'order', ex.order));
 		fm.push('    sets:');
@@ -120,7 +121,8 @@ export function serializeWorkout(w: Workout): string {
 		'exercises:',
 	];
 	for (const ex of w.exercises) {
-		fm.push(`  - ${line(0, 'exercise_id', ex.exercise_id).trimStart()}`);
+		fm.push(`  - ${line(0, 'uid', ex.uid).trimStart()}`);
+		fm.push(line(2, 'exercise_id', ex.exercise_id));
 		fm.push(line(2, 'name', ex.name));
 		fm.push(line(2, 'order', ex.order));
 		fm.push('    sets:');

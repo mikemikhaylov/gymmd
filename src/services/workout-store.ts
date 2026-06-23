@@ -70,6 +70,7 @@ export class WorkoutStore {
 			total_sets_completed: 0,
 			total_volume_kg: 0,
 			exercises: tpl.exercises.map((ex) => ({
+				uid: ex.uid,
 				exercise_id: ex.exercise_id,
 				name: ex.name,
 				order: ex.order,

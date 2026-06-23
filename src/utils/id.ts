@@ -25,3 +25,12 @@ export function templateId(): string {
 export function workoutId(): string {
 	return `wkt-${randomSuffix(6)}`;
 }
+
+/**
+ * Per-entry id for an exercise slot inside a template/workout. Distinct from
+ * `exercise_id` so the same exercise can appear multiple times (e.g. circuits)
+ * and still be matched 1:1 between a workout and its template.
+ */
+export function entryUid(): string {
+	return `e-${randomSuffix(6)}`;
+}

@@ -156,6 +156,7 @@ exercises:
 - Frontmatter `exercises[].sets` carries the **full data**, not a summary count — this is what makes the file queryable via Dataview/Bases without parsing the markdown table.
 - **Frontmatter is the single source of truth; the body `##` headings + tables are a generated, read-only view.** The plugin always writes frontmatter first, then regenerates the body from it (see §11). Hand edits to data should be made in the YAML frontmatter, not the table — the plugin does not parse the table back into data.
 - `##` heading → `exercise_id` is taken from the frontmatter `exercises` list order; headings are emitted from frontmatter, so there is no heading-text-to-ID resolution to worry about.
+- **Each exercise entry also carries a per-entry `uid`** (e.g. `uid: e-7a2c91`), distinct from `exercise_id`. This lets the **same exercise appear multiple times** in one template (e.g. circuits: Squat, Lunge, Pull Up, then repeat all three) while still being matched 1:1 between a workout and its template at finish time. The `uid` is generated when the entry is added and copied verbatim into the workout when it's created. (Examples above omit `uid` for brevity; the real first key of each entry is `uid`.)
 
 ---
 

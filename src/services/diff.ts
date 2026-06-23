@@ -34,14 +34,14 @@ function sameMembers(a: string[], b: string[]): boolean {
 export function diffCompletedAgainstTemplate(w: Workout, tpl: Template): TemplateDiff {
 	const changes: string[] = [];
 
-	const workoutIds = w.exercises.map((e) => e.exercise_id);
-	const templateIds = tpl.exercises.map((e) => e.exercise_id);
+	const workoutIds = w.exercises.map((e) => e.uid);
+	const templateIds = tpl.exercises.map((e) => e.uid);
 	if (sameMembers(workoutIds, templateIds) && workoutIds.join('|') !== templateIds.join('|')) {
 		changes.push('Exercise order changed');
 	}
 
 	for (const wex of w.exercises) {
-		const tex = tpl.exercises.find((e) => e.exercise_id === wex.exercise_id);
+		const tex = tpl.exercises.find((e) => e.uid === wex.uid);
 		const completed = wex.sets.filter((s) => s.done);
 		if (completed.length === 0) continue;
 
@@ -76,22 +76,23 @@ export function diffCompletedAgainstTemplate(w: Workout, tpl: Template): Templat
  */
 export function applyCompletedToTemplate(w: Workout, tpl: Template): Template {
 	const next: Template = structuredClone(tpl);
-	const byId = new Map(next.exercises.map((e) => [e.exercise_id, e]));
+	const byUid = new Map(next.exercises.map((e) => [e.uid, e]));
 	const ordered: typeof next.exercises = [];
 
 	for (const wex of w.exercises) {
 		const completed = wex.sets.filter((s) => s.done);
-		let tex = byId.get(wex.exercise_id);
+		let tex = byUid.get(wex.uid);
 
 		if (!tex) {
 			if (completed.length === 0) continue;
 			tex = {
+				uid: wex.uid,
 				exercise_id: wex.exercise_id,
 				name: wex.name,
 				order: 0,
 				sets: [],
 			};
-			byId.set(wex.exercise_id, tex);
+			byUid.set(wex.uid, tex);
 		}
 
 		completed.forEach((s, i) => {

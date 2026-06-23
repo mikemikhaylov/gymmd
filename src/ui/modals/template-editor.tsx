@@ -2,6 +2,7 @@ import { Notice } from 'obsidian';
 import { type ReactElement, useState } from 'react';
 import type { TFile } from 'obsidian';
 import type { Exercise, Template } from '../../types';
+import { entryUid } from '../../utils/id';
 import { usePlugin } from '../context';
 import { promptText } from './prompts';
 
@@ -17,7 +18,6 @@ function ExercisePicker({
 	available,
 	query,
 	setQuery,
-	alreadyAdded,
 	onPick,
 	onCreate,
 	onCancel,
@@ -25,7 +25,6 @@ function ExercisePicker({
 	available: Exercise[];
 	query: string;
 	setQuery: (q: string) => void;
-	alreadyAdded: string[];
 	onPick: (e: Exercise) => void;
 	onCreate: (name: string) => void;
 	onCancel: () => void;
@@ -44,20 +43,15 @@ function ExercisePicker({
 				onChange={(e) => setQuery(e.target.value)}
 			/>
 			<div className="gymmd-picker-list">
-				{matches.map((e) => {
-					const added = alreadyAdded.includes(e.exercise_id);
-					return (
-						<button
-							key={e.exercise_id}
-							className="gymmd-picker-item"
-							disabled={added}
-							onClick={() => onPick(e)}
-						>
-							{e.name}
-							{added ? ' (added)' : ''}
-						</button>
-					);
-				})}
+				{matches.map((e) => (
+					<button
+						key={e.exercise_id}
+						className="gymmd-picker-item"
+						onClick={() => onPick(e)}
+					>
+						{e.name}
+					</button>
+				))}
 				{query.trim() && !exactExists && (
 					<button className="gymmd-picker-item gymmd-picker-create" onClick={() => onCreate(query.trim())}>
 						➕ Create "{query.trim()}"
@@ -96,12 +90,11 @@ export function TemplateEditor({ file, initial, onSaved, close }: Props): ReactE
 	const addExerciseToTemplate = (exercise: Exercise) => {
 		setAvailable(null);
 		setQuery('');
-		if (template.exercises.some((x) => x.exercise_id === exercise.exercise_id)) {
-			new Notice(`${exercise.name} is already in this template`);
-			return;
-		}
+		// Duplicates are allowed on purpose (e.g. circuits: Squat, Lunge, Pull Up,
+		// then repeat). Each entry gets its own uid.
 		update((t) => {
 			t.exercises.push({
+				uid: entryUid(),
 				exercise_id: exercise.exercise_id,
 				name: exercise.name,
 				order: t.exercises.length + 1,
@@ -195,7 +188,6 @@ export function TemplateEditor({ file, initial, onSaved, close }: Props): ReactE
 					available={available}
 					query={query}
 					setQuery={setQuery}
-					alreadyAdded={template.exercises.map((e) => e.exercise_id)}
 					onPick={addExerciseToTemplate}
 					onCreate={(name) => void createAndAdd(name)}
 					onCancel={() => setAvailable(null)}
@@ -207,7 +199,7 @@ export function TemplateEditor({ file, initial, onSaved, close }: Props): ReactE
 			)}
 
 			{template.exercises.map((ex, exIndex) => (
-				<div key={ex.exercise_id} className="gymmd-exercise-block">
+				<div key={ex.uid} className="gymmd-exercise-block">
 					<div className="gymmd-exercise-head">
 						<strong>{ex.name}</strong>
 						<span className="gymmd-row-actions">

@@ -69,6 +69,8 @@ Three entity types, each a separate markdown file with structured frontmatter:
 
 IDs are stable short strings — entities reference each other by ID, never by filename, so renames never break links. Exercises are archived (not deleted) to keep historical data intact.
 
+Each exercise *entry* inside a template/workout also has a per-entry `uid` (e.g. `e-7a2c91`), distinct from `exercise_id`. This allows the same exercise to appear multiple times (circuits/supersets) and is the join key the finish-diff uses to match a workout entry to its template entry. `uid` is copied template → workout at creation. React lists key on `uid`, not `exercise_id`.
+
 Core invariants (see PLAN.md §11):
 - **Frontmatter is the only source of truth; body tables are generated, write-only output** — never parse the table back into data. Hand edits go in the YAML.
 - **Every workout starts from a template** — there is no "from scratch" creation. To add an exercise, edit a template first.

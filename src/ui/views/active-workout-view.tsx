@@ -257,7 +257,7 @@ function AllSetsTab({
 	return (
 		<div className="gymmd-allsets">
 			{workout.exercises.map((ex, e) => (
-				<div key={ex.exercise_id} className="gymmd-exercise-block">
+				<div key={ex.uid} className="gymmd-exercise-block">
 					<div className="gymmd-exercise-head">
 						<strong>{ex.name}</strong>
 						<span className="gymmd-row-actions">

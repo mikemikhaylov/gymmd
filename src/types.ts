@@ -34,6 +34,8 @@ export interface TemplateSet {
 }
 
 export interface TemplateExercise {
+	/** Stable per-entry id (an exercise may appear more than once). */
+	uid: string;
 	exercise_id: string;
 	name: string;
 	order: number;
@@ -67,6 +69,8 @@ export interface WorkoutSet {
 }
 
 export interface WorkoutExercise {
+	/** Stable per-entry id, copied from the template entry it came from. */
+	uid: string;
 	exercise_id: string;
 	name: string;
 	order: number;
