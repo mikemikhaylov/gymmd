@@ -63,16 +63,16 @@ Three entity types, each a separate markdown file with structured frontmatter:
 
 | Entity | Folder | Key ID field |
 |---|---|---|
-| Exercise | `Workouts/Exercises/` | `exercise_id` (e.g. `ex-3f9a2b`) |
-| Template | `Workouts/Templates/` | `template_id` (e.g. `tpl-7c1d`) |
-| Workout | `Workouts/Active/`, `Workouts/Completed/`, or `Workouts/Abandoned/` | `workout_id` (e.g. `wkt-a91f3`) |
+| Exercise | `workouts/exercises/` | `exercise_id` (e.g. `ex-3f9a2b`) |
+| Template | `workouts/templates/` | `template_id` (e.g. `tpl-7c1d`) |
+| Workout | `workouts/active/`, `workouts/completed/`, or `workouts/abandoned/` | `workout_id` (e.g. `wkt-a91f3`) |
 
 IDs are stable short strings — entities reference each other by ID, never by filename, so renames never break links. Exercises are archived (not deleted) to keep historical data intact.
 
 Core invariants (see PLAN.md §11):
 - **Frontmatter is the only source of truth; body tables are generated, write-only output** — never parse the table back into data. Hand edits go in the YAML.
 - **Every workout starts from a template** — there is no "from scratch" creation. To add an exercise, edit a template first.
-- **Workout `status` drives folder placement** — `in_progress` → `Active/`, `completed` → `Completed/`, `abandoned` → `Abandoned/`, moved via `fileManager.renameFile()`.
+- **Workout `status` drives folder placement** — `in_progress` → `active/`, `completed` → `completed/`, `abandoned` → `abandoned/`, moved via `fileManager.renameFile()`.
 - **Timestamps are quoted ISO-8601 strings**; timer state derives from the stored `current_phase_started`, never a running interval.
 - **Active Workout UI is dark-theme-only**, scoped via CSS class, independent of the vault theme.
 

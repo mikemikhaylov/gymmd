@@ -69,7 +69,7 @@ auto-reloads any plugin when its `main.js` changes.
 
 ### d. First run
 
-The folders (`Workouts/Exercises`, `Templates`, `Active`, `Completed`, `Abandoned`)
+The folders (`workouts/exercises`, `templates`, `active`, `completed`, `abandoned`)
 are created automatically the first time you add data. Start by creating a couple of
 exercises, then a template, then press **Start** on the template.
 
@@ -164,7 +164,7 @@ awkward on iOS — BRAT is the better path on phones.
   (`src/services/diff.ts`) are pure functions and the highest-value first targets
   (PLAN.md §10.1). Vitest is a good fit; no test runner is wired up yet.
 - **Smoke-test the full loop** in a real vault: create exercises → template → run a
-  workout → finish with a template diff → check the file in `Completed/`.
+  workout → finish with a template diff → check the file in `completed/`.
 - **Submit to the community catalog** (optional): follow the
   [plugin guidelines](https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines)
   and open a PR at [obsidianmd/obsidian-releases](https://github.com/obsidianmd/obsidian-releases).

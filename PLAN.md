@@ -17,7 +17,7 @@ A markdown-native Obsidian plugin for logging gym workouts, where:
 |---|---|---|
 | **Exercise** | Named movement with a stable ID | Created once, renamed freely, archived not deleted |
 | **Template** | Reusable workout plan (exercises + planned sets) | Created, edited anytime; can be updated from a finished workout if it diverged |
-| **Workout** | One performed instance, always created from a template | Created → lives in `Active/` while in progress → moved to `Completed/` on finish (or `Abandoned/` if discarded) |
+| **Workout** | One performed instance, always created from a template | Created → lives in `active/` while in progress → moved to `completed/` on finish (or `abandoned/` if discarded) |
 
 Templates and Workouts are **separate files**, not one object with a status field. A Workout may reference the Template it started from, but is independent once created — editing it never silently mutates the template.
 
@@ -27,22 +27,24 @@ Templates and Workouts are **separate files**, not one object with a status fiel
 
 ```
 VaultRoot/
-  Workouts/
-    Exercises/
+  workouts/
+    exercises/
       Squat.md
       Pull Up.md
       Bench Press.md
-    Templates/
+    templates/
       Push Day.md
       Leg Day.md
-    Active/
+    active/
       2026-06-20 Push Day.md          ← exists only while in_progress (0 or 1 file)
-    Completed/
+    completed/
       2026-06-18 Push Day.md
       2026-06-15 Leg Day.md
-    Abandoned/
+    abandoned/
       2026-06-14 Leg Day.md           ← workouts discarded mid-session
 ```
+
+- Folder names default to lowercase (`workouts/exercises/…`); all configurable in settings. File names keep their natural casing (`Push Day.md`).
 
 - Base path and sub-folder names configurable in plugin settings; structure above is the default.
 - Workout filenames: `YYYY-MM-DD <Template Name>.md`, with `-2`, `-3` suffix for multiple sessions same day.
@@ -52,7 +54,7 @@ VaultRoot/
 
 ## 3. Exercise file
 
-`Workouts/Exercises/Squat.md`
+`workouts/exercises/Squat.md`
 ```markdown
 ---
 exercise_id: ex-3f9a2b
@@ -74,7 +76,7 @@ Notes about this exercise (form cues, equipment, etc).
 
 ## 4. Template file
 
-`Workouts/Templates/Push Day.md`
+`workouts/templates/Push Day.md`
 ```markdown
 ---
 type: workout-template
@@ -159,9 +161,9 @@ exercises:
 
 ## 5. Workout file (performed instance)
 
-Lives in `Workouts/Active/` while `status: in_progress`, moved verbatim to `Workouts/Completed/` on finish.
+Lives in `workouts/active/` while `status: in_progress`, moved verbatim to `workouts/completed/` on finish.
 
-`Workouts/Active/2026-06-20 Push Day.md`
+`workouts/active/2026-06-20 Push Day.md`
 ```markdown
 ---
 type: workout
@@ -290,7 +292,7 @@ exercises:
 ```
 
 Notes:
-- **`status`** (`in_progress` → `completed`, or `in_progress` → `abandoned`) is authoritative; the plugin moves the file between `Active/`, `Completed/`, and `Abandoned/` to match, via `app.fileManager.renameFile()` (preserves any wikilinks pointing at it).
+- **`status`** (`in_progress` → `completed`, or `in_progress` → `abandoned`) is authoritative; the plugin moves the file between `active/`, `completed/`, and `abandoned/` to match, via `app.fileManager.renameFile()` (preserves any wikilinks pointing at it).
 - **`current_phase_started`**: the single timestamp the live stopwatch needs. Present only while `in_progress`, cleared on completion. On plugin load, if a workout has `status: in_progress`, the timer is recomputed as `Date.now() - current_phase_started` — not from a running interval, so it's correct immediately after reopening Obsidian regardless of how long it was closed.
 - **Planned vs actual columns both present** on every set row — plan is fixed when the workout starts (or copied from the template), actual is filled in live and freely editable afterward, anywhere, on any set (past, current, or future).
 - **Adding sets mid-workout**: plugin appends a new entry to both the `sets` array and the table row for that exercise; `planned_*` can be left blank or mirror the actual values for ad-hoc sets. No new exercises can be added mid-workout — only new sets to exercises already in the workout.
@@ -333,17 +335,17 @@ Two tabs, **dark theme only** — forced via a scoped CSS class on the view cont
     - **Keep Template As-Is** — finish without touching the template.
     - **Cancel** — return to the workout.
 5. Every workout originates from a template (see §10), so a `template_id` is always present and this diff step always applies.
-6. On finish: `status → completed`, `completed`/`duration_minutes` finalized, `current_phase_started` cleared, file moved from `Active/` to `Completed/`. Incomplete sets remain in the file with blank actuals and `done: false`.
+6. On finish: `status → completed`, `completed`/`duration_minutes` finalized, `current_phase_started` cleared, file moved from `active/` to `completed/`. Incomplete sets remain in the file with blank actuals and `done: false`.
 
 ---
 
 ## 8. Resuming after closing Obsidian
 
 - Every change to the active workout autosaves (debounced ~300–500ms) via `app.vault.process()` — no explicit "save" button during the workout.
-- On plugin load, check for a workout with `status: in_progress` (tracked via a small plugin-settings pointer or by scanning `Active/`, which should only ever contain 0 or 1 file). If found, the Active Workout view can be reopened directly via ribbon icon or command, landing back exactly where you left off, with the timer correctly recalculated from `current_phase_started`.
+- On plugin load, check for a workout with `status: in_progress` (tracked via a small plugin-settings pointer or by scanning `active/`, which should only ever contain 0 or 1 file). If found, the Active Workout view can be reopened directly via ribbon icon or command, landing back exactly where you left off, with the timer correctly recalculated from `current_phase_started`.
 - If the user tries to **start a new workout** while one is already `in_progress`, show a prompt: **"A workout is already in progress — resume it or abandon it?"**
     - **Resume** → opens the existing active workout view.
-    - **Abandon** → sets `status: abandoned`, clears `current_phase_started`, and moves the file from `Active/` to `Workouts/Abandoned/` (via `fileManager.renameFile()`). Abandoned workouts are preserved, not deleted — they keep whatever sets were completed, so a later AI coach can still see interrupted attempts. A new workout can then begin.
+    - **Abandon** → sets `status: abandoned`, clears `current_phase_started`, and moves the file from `active/` to `workouts/abandoned/` (via `fileManager.renameFile()`). Abandoned workouts are preserved, not deleted — they keep whatever sets were completed, so a later AI coach can still see interrupted attempts. A new workout can then begin.
 
 ---
 
@@ -351,18 +353,18 @@ Two tabs, **dark theme only** — forced via a scoped CSS class on the view cont
 
 ```dataview
 TABLE date, duration_minutes, total_sets_completed, total_volume_kg
-FROM "Workouts/Completed"
+FROM "workouts/completed"
 WHERE type = "workout"
 SORT date DESC
 ```
 
 ```dataview
 TABLE total_planned_sets, exercise_count
-FROM "Workouts/Templates"
+FROM "workouts/templates"
 WHERE type = "workout-template"
 ```
 
-Per-exercise history across all workouts (e.g. "all Bench Press sets over the last year") requires scanning the `exercises[].sets` arrays inside frontmatter across all files in `Completed/` — doable today via a short DataviewJS script since the data is fully structured in frontmatter (no markdown-table parsing needed). A dedicated in-plugin "Exercise Progress" view is a natural v2 feature once there's real history to query against — current schema already supports it without any migration, since `exercise_id` is the consistent join key everywhere.
+Per-exercise history across all workouts (e.g. "all Bench Press sets over the last year") requires scanning the `exercises[].sets` arrays inside frontmatter across all files in `completed/` — doable today via a short DataviewJS script since the data is fully structured in frontmatter (no markdown-table parsing needed). A dedicated in-plugin "Exercise Progress" view is a natural v2 feature once there's real history to query against — current schema already supports it without any migration, since `exercise_id` is the consistent join key everywhere.
 
 ---
 
@@ -371,11 +373,11 @@ Per-exercise history across all workouts (e.g. "all Bench Press sets over the la
 1. **Frontmatter serializer + body renderer** — the shared core both Template and Workout files depend on. Reads structured data from frontmatter (via `metadataCache` or by parsing the YAML block), and serializes data → YAML frontmatter + regenerated body tables. Because frontmatter is the only source of truth (§11), there is **no table-parsing path** — the body is write-only output. Get the round-trip (data → file → data, reading only frontmatter) solid first, with unit tests on the type schema and table rendering (blank cells, `weight: 0` → "BW", missing/null actuals).
 2. **Exercise CRUD** — list view, add/rename/archive. Simplest piece, validates the parser on a minimal schema.
 3. **Template builder UI** — create/edit templates, add exercises (with inline "create new exercise" if missing), add/reorder/edit sets.
-4. **Workout creation from template** — clones the chosen template's data into a new `Active/` file, sets `status: in_progress`, `started`. There is **no "from scratch" creation** — every workout starts from a template. To work a new exercise, add it to a template first, then start a workout. `current_phase_started` is left blank until the first Start Set press (timer sits at `0:00`).
+4. **Workout creation from template** — clones the chosen template's data into a new `active/` file, sets `status: in_progress`, `started`. There is **no "from scratch" creation** — every workout starts from a template. To work a new exercise, add it to a template first, then start a workout. `current_phase_started` is left blank until the first Start Set press (timer sits at `0:00`).
 5. **Active Workout view** — Tab 1 (stopwatch) and Tab 2 (all sets), timestamp-based timer, autosave on every mutation.
-6. **Finish flow** — diff against template, confirmation modal, file move to `Completed/`.
+6. **Finish flow** — diff against template, confirmation modal, file move to `completed/`.
 7. **History view** — list of completed workouts, read-only or editable detail view.
-8. **Settings** — configurable folder paths (base path + `Exercises/`, `Templates/`, `Active/`, `Completed/`, `Abandoned/` sub-folder names).
+8. **Settings** — configurable folder paths (base path + `exercises/`, `templates/`, `active/`, `completed/`, `abandoned/` sub-folder names).
 9. *(Later)* Exercise progress view / DataviewJS examples, bodyweight tracking, AI-coach-facing export helpers.
 
 ---

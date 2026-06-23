@@ -12,12 +12,12 @@ export interface GymMDSettings {
 }
 
 export const DEFAULT_SETTINGS: GymMDSettings = {
-	basePath: 'Workouts',
-	exercisesFolder: 'Exercises',
-	templatesFolder: 'Templates',
-	activeFolder: 'Active',
-	completedFolder: 'Completed',
-	abandonedFolder: 'Abandoned',
+	basePath: 'workouts',
+	exercisesFolder: 'exercises',
+	templatesFolder: 'templates',
+	activeFolder: 'active',
+	completedFolder: 'completed',
+	abandonedFolder: 'abandoned',
 };
 
 export class GymMDSettingTab extends PluginSettingTab {
@@ -37,20 +37,20 @@ export class GymMDSettingTab extends PluginSettingTab {
 			.setDesc('Vault folder that contains all workout data.')
 			.addText((text) =>
 				text
-					.setPlaceholder('Workouts')
+					.setPlaceholder('workouts')
 					.setValue(this.plugin.settings.basePath)
 					.onChange(async (value) => {
-						this.plugin.settings.basePath = value.trim() || 'Workouts';
+						this.plugin.settings.basePath = value.trim() || 'workouts';
 						await this.plugin.saveSettings();
 					}),
 			);
 
 		const subFolders: Array<[keyof GymMDSettings, string, string]> = [
-			['exercisesFolder', 'Exercises sub-folder', 'Exercises'],
-			['templatesFolder', 'Templates sub-folder', 'Templates'],
-			['activeFolder', 'Active sub-folder', 'Active'],
-			['completedFolder', 'Completed sub-folder', 'Completed'],
-			['abandonedFolder', 'Abandoned sub-folder', 'Abandoned'],
+			['exercisesFolder', 'Exercises sub-folder', 'exercises'],
+			['templatesFolder', 'Templates sub-folder', 'templates'],
+			['activeFolder', 'Active sub-folder', 'active'],
+			['completedFolder', 'Completed sub-folder', 'completed'],
+			['abandonedFolder', 'Abandoned sub-folder', 'abandoned'],
 		];
 
 		for (const [key, name, fallback] of subFolders) {
