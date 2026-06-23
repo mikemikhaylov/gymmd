@@ -144,6 +144,25 @@
 	width: min(720px, 90vw);
 }
 
+/* Dark editor modal — color the whole modal chrome, not just the content. */
+.gymmd-wide-modal {
+	background: #16181d;
+	color: #e6e8ec;
+}
+
+.gymmd-wide-modal .modal-title {
+	color: #f4f6f8;
+}
+
+.gymmd-dark .gymmd-exercise-block {
+	border-color: #3a3f4b;
+}
+
+.gymmd-dark .gymmd-picker {
+	background: #1d2027;
+	border-color: #3a3f4b;
+}
+
 /* --- Inline exercise picker --- */
 
 .gymmd-picker {
@@ -295,21 +314,31 @@
 	cursor: pointer;
 }
 
-.gymmd-discard-button {
-	width: 100%;
-	padding: 10px;
-	margin-top: 8px;
-	font-size: 0.95em;
-	color: #ff8a8a !important;
-	background: transparent !important;
-	border: 1px solid #4a3a3f !important;
-	cursor: pointer;
+.gymmd-target {
+	font-size: 1.3em;
+	margin-bottom: 16px;
+	color: #f4f6f8;
 }
 
-.gymmd-nav {
-	display: flex;
-	justify-content: space-between;
+.gymmd-all-done {
+	font-size: 1.2em;
+	text-align: center;
+	margin: 32px 0;
+	color: #9aa0aa;
+}
+
+.gymmd-inprogress {
+	color: #6ee7a8;
+	font-size: 0.85em;
+	align-self: center;
+}
+
+.gymmd-stopwatch-footer {
+	position: sticky;
+	bottom: 0;
+	padding: 12px 0 4px;
 	margin-top: 16px;
+	background: #16181d;
 }
 
 .gymmd-nav button {

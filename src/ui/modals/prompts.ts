@@ -58,7 +58,8 @@ export function confirm(
 					result = true;
 					modal.close();
 				});
-				if (opts.danger) b.setDestructive();
+				// mod-warning works on all Obsidian versions (setDestructive needs 1.13).
+				if (opts.danger) b.buttonEl.addClass('mod-warning');
 				else b.setCta();
 			})
 			.addButton((b) => b.setButtonText('Cancel').onClick(() => modal.close()));
@@ -96,7 +97,7 @@ export function chooseAction(
 					modal.close();
 				});
 				if (action.cta) b.setCta();
-				if (action.danger) b.setDestructive();
+				if (action.danger) b.buttonEl.addClass('mod-warning');
 			});
 		}
 

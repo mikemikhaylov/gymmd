@@ -305,23 +305,23 @@ Notes:
 
 ## 6. Live "Active Workout" UI
 
-Two tabs, **dark theme only** — forced via a scoped CSS class on the view container, completely independent of the vault's current theme. There is no light mode variant; the plugin always renders dark. Large tap targets for phone use in the gym.
+Two tabs, **dark theme only** — forced via a scoped CSS class, independent of the vault theme. (All GymMD views render dark for consistency.) Large tap targets for phone use in the gym. Header has **Finish** and **Abandon**, both of which ask for confirmation; Abandon/finish/delete confirmations use the `mod-warning` button class (version-safe, no dependency on the 1.13 `setDestructive` API).
 
 ### Tab 1 — Stopwatch
-- One large centered timer. Sits at `0:00` until the first **Start Set** press. Resets to `0` and restarts on **every** press of Start Set or End Set (no separate "rest" vs "set" mode — single continuous counter). `current_phase_started` is written to the file on every reset.
-- Current exercise name, "Set X of Y" indicator.
-- Planned weight/reps shown large; become editable the moment **Start Set** is pressed (pre-filled from planned values).
-- One big toggle button:
-    - **Start Set** → timer resets & starts, fields become editable, button becomes **End Set**.
-    - **End Set** → commits `reps`/`weight`/`duration_seconds` to that set, marks `done: true`, timer resets & restarts immediately, advances to next planned set, button reverts to **Start Set**.
-- **Discard Set** → shown only while a set is in progress (after **Start Set**). Cancels the current set and fully undoes the start: clears the set's `started`/`reps`/`weight`/`duration_seconds` back to their pre-start values, leaves `done: false`, and restores the timer to where it was before Start. Use it when a set was started by accident — afterwards the button is back to **Start Set** and you can start cleanly again. (For a set being re-done, Discard restores the previously completed values rather than wiping them.)
-- Manual prev/next navigation to jump between sets out of order if needed.
+- One large centered timer. Sits at `0:00` until the first **Start Set** press. Resets to `0` and restarts on **every** press of Start Set or End Set (single continuous counter). `current_phase_started` is the file-persisted anchor, so the timer is correct after reopening Obsidian.
+- The stopwatch shows the **current set** = the active (in-progress) set if there is one, otherwise the **first not-done set**. Planned reps/weight are shown **before** starting (a "Target: R reps × W kg" line plus the values filled into the disabled inputs) so you can load the bar before pressing Start. There is **no manual prev/next** — the Start/End button is the only navigation here.
+- One big button pinned to the **bottom of the screen**:
+    - **Start Set** → timer resets & starts, the reps/weight inputs become editable (pre-filled from planned), button becomes **End Set**, and this set is marked active (reflected in Tab 2).
+    - **End Set** → commits `reps`/`weight`/`duration_seconds`, marks `done: true`, timer resets & restarts, and the current set advances to the **first remaining not-done set** (anywhere in the workout, not just the next one).
+    - When **all sets are done**, the button becomes **Finish Workout** (runs the §7 finish flow, including the template-update prompt if anything diverged).
+- There is no separate "discard set" — to undo a set, switch to **All Sets** and uncheck its **Done** box.
 
 ### Tab 2 — All Sets
 - Sets grouped by exercise, in order, each row showing planned vs actual, done/not-done state.
 - Inline editing of reps/weight on any set, completed or not.
-- Add new set to any exercise block (ad-hoc sets — `planned_*` mirrors actual on entry).
-- Delete a set from any exercise block.
+- **Start** button on any not-done set → starts it as the active set and switches to the Stopwatch (the two tabs share one active-set state). The currently active set shows "● active" instead.
+- Toggle **Done** on any set (this is how you un-mark a set you didn't actually finish).
+- Add new set to any exercise block (ad-hoc sets — `planned_*` mirrors actual on entry). **Deleting a set asks for confirmation.**
 - Reorder exercise blocks and reorder sets within a block (simple up/down controls — no drag-and-drop dependency needed).
 - **No adding new exercises mid-workout.** The exercise list is fixed at workout creation time. If the exercise list needs changing, finish or abandon and create a new workout.
 

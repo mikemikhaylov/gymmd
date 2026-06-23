@@ -1,6 +1,6 @@
 import { Notice } from 'obsidian';
-import { type ReactElement, useEffect, useMemo, useState } from 'react';
-import type { Workout, WorkoutSet } from '../../types';
+import { type ReactElement, useState } from 'react';
+import type { Workout } from '../../types';
 import { VIEW_TYPE_ACTIVE_WORKOUT, VIEW_TYPE_TEMPLATES } from '../../utils/constants';
 import { nowISODateTime, parseISODateTime, formatStopwatch } from '../../utils/date';
 import { usePlugin } from '../context';
@@ -13,13 +13,6 @@ import { ReactItemView } from './react-view';
 interface Ref {
 	e: number;
 	s: number;
-}
-
-/** Captured at Start, so Discard can fully undo a (mis-)started set. */
-interface SetSnapshot {
-	ref: Ref;
-	set: WorkoutSet;
-	phase: string | null;
 }
 
 function weightLabel(w: number | null): string {
@@ -36,164 +29,116 @@ function firstNotDone(w: Workout): Ref | null {
 	return null;
 }
 
+function sameRef(a: Ref | null, b: Ref | null): boolean {
+	return !!a && !!b && a.e === b.e && a.s === b.s;
+}
+
 function numFromInput(value: string): number | null {
 	if (value.trim() === '') return null;
 	const n = Number(value);
 	return Number.isFinite(n) ? n : null;
 }
 
+interface SetActions {
+	ctrl: ActiveWorkoutController;
+	activeRef: Ref | null;
+	startSetAt: (ref: Ref) => void;
+	endActiveSet: () => void;
+	onFinish: () => void;
+}
+
 // --- Stopwatch tab --------------------------------------------------------
 
 function StopwatchTab({
-	ctrl,
 	workout,
-	cursor,
-	setCursor,
-	activeRef,
-	setActiveRef,
-	setSnapshot,
-	snapshot,
+	actions,
 }: {
-	ctrl: ActiveWorkoutController;
 	workout: Workout;
-	cursor: Ref;
-	setCursor: (r: Ref) => void;
-	activeRef: Ref | null;
-	setActiveRef: (r: Ref | null) => void;
-	setSnapshot: (s: SetSnapshot | null) => void;
-	snapshot: SetSnapshot | null;
+	actions: SetActions;
 }): ReactElement {
+	const { ctrl, activeRef, startSetAt, endActiveSet, onFinish } = actions;
+
 	const running = workout.current_phase_started !== null;
 	const now = useNow(running);
 	const anchor = parseISODateTime(workout.current_phase_started);
 	const elapsed = running && anchor !== null ? Math.max(0, (now - anchor) / 1000) : 0;
 
-	const exercise = workout.exercises[cursor.e];
-	const set = exercise?.sets[cursor.s];
-	if (!exercise || !set) return <p>No set selected.</p>;
+	const activeValid = !!activeRef && !!workout.exercises[activeRef.e]?.sets[activeRef.s];
+	const displayRef = activeValid ? activeRef : firstNotDone(workout);
+	const isActive = activeValid;
 
-	const isActive = !!activeRef && activeRef.e === cursor.e && activeRef.s === cursor.s;
-
-	const startSet = () => {
-		const ts = nowISODateTime();
-		setSnapshot({
-			ref: cursor,
-			set: structuredClone(set),
-			phase: workout.current_phase_started,
-		});
+	const editField = (field: 'reps' | 'weight', value: number | null) => {
+		if (!displayRef) return;
 		ctrl.mutate((w) => {
-			const t = w.exercises[cursor.e].sets[cursor.s];
-			t.started = ts;
-			if (t.reps === null) t.reps = t.planned_reps;
-			if (t.weight === null) t.weight = t.planned_weight;
-			w.current_phase_started = ts;
-			if (!w.started) w.started = ts;
+			w.exercises[displayRef.e].sets[displayRef.s][field] = value;
 		});
-		setActiveRef(cursor);
-	};
-
-	/** Undo a mis-started set, restoring its prior state and the timer anchor. */
-	const discardSet = () => {
-		if (!snapshot) return;
-		ctrl.mutate((w) => {
-			w.exercises[snapshot.ref.e].sets[snapshot.ref.s] = structuredClone(snapshot.set);
-			w.current_phase_started = snapshot.phase;
-		});
-		setActiveRef(null);
-		setSnapshot(null);
-	};
-
-	const endSet = () => {
-		const next = ((): Ref => {
-			for (let e = 0; e < workout.exercises.length; e++) {
-				for (let s = 0; s < workout.exercises[e].sets.length; s++) {
-					const isCurrent = e === cursor.e && s === cursor.s;
-					if (!workout.exercises[e].sets[s].done && !isCurrent) return { e, s };
-				}
-			}
-			return cursor;
-		})();
-
-		ctrl.mutate((w) => {
-			const t = w.exercises[cursor.e].sets[cursor.s];
-			const startedMs = parseISODateTime(t.started);
-			t.duration_seconds =
-				startedMs !== null ? Math.max(0, Math.round((Date.now() - startedMs) / 1000)) : null;
-			t.done = true;
-			w.current_phase_started = nowISODateTime();
-		});
-		setActiveRef(null);
-		setSnapshot(null);
-		setCursor(next);
-	};
-
-	const editCursor = (field: 'reps' | 'weight', value: number | null) =>
-		ctrl.mutate((w) => {
-			w.exercises[cursor.e].sets[cursor.s][field] = value;
-		});
-
-	const flat: Ref[] = [];
-	workout.exercises.forEach((ex, e) => ex.sets.forEach((_, s) => flat.push({ e, s })));
-	const pos = flat.findIndex((r) => r.e === cursor.e && r.s === cursor.s);
-	const goto = (delta: number) => {
-		const j = pos + delta;
-		if (j >= 0 && j < flat.length) setCursor(flat[j]);
 	};
 
 	return (
 		<div className="gymmd-stopwatch">
-			<div className="gymmd-current-exercise">{exercise.name}</div>
-			<div className="gymmd-set-indicator">
-				Set {cursor.s + 1} of {exercise.sets.length}
-			</div>
-
 			<div className="gymmd-timer">{formatStopwatch(elapsed)}</div>
 
-			<div className="gymmd-planned">
-				Plan: {set.planned_reps ?? '—'} reps × {weightLabel(set.planned_weight)} kg
-			</div>
+			{displayRef ? (
+				(() => {
+					const exercise = workout.exercises[displayRef.e];
+					const set = exercise.sets[displayRef.s];
+					const repsValue = isActive ? set.reps : set.planned_reps;
+					const weightValue = isActive ? set.weight : set.planned_weight;
+					return (
+						<>
+							<div className="gymmd-current-exercise">{exercise.name}</div>
+							<div className="gymmd-set-indicator">
+								Set {displayRef.s + 1} of {exercise.sets.length}
+							</div>
 
-			<div className="gymmd-inputs">
-				<label>
-					Reps
-					<input
-						type="number"
-						min={0}
-						disabled={!isActive}
-						value={set.reps ?? ''}
-						onChange={(e) => editCursor('reps', numFromInput(e.target.value))}
-					/>
-				</label>
-				<label>
-					Weight (kg)
-					<input
-						type="number"
-						min={0}
-						step="0.5"
-						disabled={!isActive}
-						value={set.weight ?? ''}
-						onChange={(e) => editCursor('weight', numFromInput(e.target.value))}
-					/>
-				</label>
-			</div>
+							<div className="gymmd-target">
+								Target: {set.planned_reps ?? '—'} reps × {weightLabel(set.planned_weight)} kg
+							</div>
 
-			<button className="gymmd-big-button" onClick={isActive ? endSet : startSet}>
-				{isActive ? 'End set' : set.done ? 'Redo set' : 'Start set'}
-			</button>
-
-			{isActive && (
-				<button className="gymmd-discard-button" onClick={discardSet}>
-					Discard set
-				</button>
+							<div className="gymmd-inputs">
+								<label>
+									Reps
+									<input
+										type="number"
+										min={0}
+										disabled={!isActive}
+										value={repsValue ?? ''}
+										onChange={(e) => editField('reps', numFromInput(e.target.value))}
+									/>
+								</label>
+								<label>
+									Weight (kg)
+									<input
+										type="number"
+										min={0}
+										step="0.5"
+										disabled={!isActive}
+										value={weightValue ?? ''}
+										onChange={(e) => editField('weight', numFromInput(e.target.value))}
+									/>
+								</label>
+							</div>
+						</>
+					);
+				})()
+			) : (
+				<div className="gymmd-all-done">All sets done — finish your workout.</div>
 			)}
 
-			<div className="gymmd-nav">
-				<button onClick={() => goto(-1)} disabled={pos <= 0}>
-					‹ Prev
-				</button>
-				<button onClick={() => goto(1)} disabled={pos >= flat.length - 1}>
-					Next ›
-				</button>
+			<div className="gymmd-stopwatch-footer">
+				{!displayRef ? (
+					<button className="gymmd-big-button" onClick={onFinish}>
+						Finish workout
+					</button>
+				) : isActive ? (
+					<button className="gymmd-big-button" onClick={endActiveSet}>
+						End set
+					</button>
+				) : (
+					<button className="gymmd-big-button" onClick={() => startSetAt(displayRef)}>
+						Start set
+					</button>
+				)}
 			</div>
 		</div>
 	);
@@ -202,12 +147,15 @@ function StopwatchTab({
 // --- All-sets tab ---------------------------------------------------------
 
 function AllSetsTab({
-	ctrl,
 	workout,
+	actions,
 }: {
-	ctrl: ActiveWorkoutController;
 	workout: Workout;
+	actions: SetActions;
 }): ReactElement {
+	const plugin = usePlugin();
+	const { ctrl, activeRef, startSetAt } = actions;
+
 	const editSet = (e: number, s: number, field: 'reps' | 'weight', value: number | null) =>
 		ctrl.mutate((w) => {
 			w.exercises[e].sets[s][field] = value;
@@ -234,10 +182,18 @@ function AllSetsTab({
 			});
 		});
 
-	const removeSet = (e: number, s: number) =>
+	const removeSet = async (e: number, s: number) => {
+		const ok = await confirm(plugin.app, {
+			title: 'Delete set',
+			message: 'Delete this set from the workout?',
+			cta: 'Delete',
+			danger: true,
+		});
+		if (!ok) return;
 		ctrl.mutate((w) => {
 			w.exercises[e].sets.splice(s, 1);
 		});
+	};
 
 	const moveSet = (e: number, s: number, delta: number) =>
 		ctrl.mutate((w) => {
@@ -284,47 +240,52 @@ function AllSetsTab({
 							</tr>
 						</thead>
 						<tbody>
-							{ex.sets.map((s, si) => (
-								<tr key={si} className={s.done ? 'gymmd-done' : ''}>
-									<td>{si + 1}</td>
-									<td className="gymmd-muted">
-										{s.planned_reps ?? '—'}×{weightLabel(s.planned_weight)}
-									</td>
-									<td>
-										<input
-											type="number"
-											min={0}
-											value={s.reps ?? ''}
-											onChange={(ev) => editSet(e, si, 'reps', numFromInput(ev.target.value))}
-										/>
-									</td>
-									<td>
-										<input
-											type="number"
-											min={0}
-											step="0.5"
-											value={s.weight ?? ''}
-											onChange={(ev) => editSet(e, si, 'weight', numFromInput(ev.target.value))}
-										/>
-									</td>
-									<td>
-										<input
-											type="checkbox"
-											checked={s.done}
-											onChange={() => toggleDone(e, si)}
-										/>
-									</td>
-									<td className="gymmd-row-actions">
-										<button onClick={() => moveSet(e, si, -1)} disabled={si === 0}>
-											↑
-										</button>
-										<button onClick={() => moveSet(e, si, 1)} disabled={si === ex.sets.length - 1}>
-											↓
-										</button>
-										<button onClick={() => removeSet(e, si)}>✕</button>
-									</td>
-								</tr>
-							))}
+							{ex.sets.map((s, si) => {
+								const active = sameRef(activeRef, { e, s: si });
+								return (
+									<tr key={si} className={s.done ? 'gymmd-done' : ''}>
+										<td>{si + 1}</td>
+										<td className="gymmd-muted">
+											{s.planned_reps ?? '—'}×{weightLabel(s.planned_weight)}
+										</td>
+										<td>
+											<input
+												type="number"
+												min={0}
+												value={s.reps ?? ''}
+												onChange={(ev) => editSet(e, si, 'reps', numFromInput(ev.target.value))}
+											/>
+										</td>
+										<td>
+											<input
+												type="number"
+												min={0}
+												step="0.5"
+												value={s.weight ?? ''}
+												onChange={(ev) => editSet(e, si, 'weight', numFromInput(ev.target.value))}
+											/>
+										</td>
+										<td>
+											<input type="checkbox" checked={s.done} onChange={() => toggleDone(e, si)} />
+										</td>
+										<td className="gymmd-row-actions">
+											{!s.done &&
+												(active ? (
+													<span className="gymmd-inprogress">● active</span>
+												) : (
+													<button onClick={() => startSetAt({ e, s: si })}>Start</button>
+												))}
+											<button onClick={() => moveSet(e, si, -1)} disabled={si === 0}>
+												↑
+											</button>
+											<button onClick={() => moveSet(e, si, 1)} disabled={si === ex.sets.length - 1}>
+												↓
+											</button>
+											<button onClick={() => void removeSet(e, si)}>✕</button>
+										</td>
+									</tr>
+								);
+							})}
 						</tbody>
 					</table>
 					<button onClick={() => addSet(e)}>Add set</button>
@@ -341,26 +302,8 @@ function ActiveWorkout(): ReactElement {
 	const ctrl = useActiveWorkout(plugin);
 	const [tab, setTab] = useState<'stopwatch' | 'sets'>('stopwatch');
 	const [activeRef, setActiveRef] = useState<Ref | null>(null);
-	const [snapshot, setSnapshot] = useState<SetSnapshot | null>(null);
-	const [rawCursor, setCursor] = useState<Ref | null>(null);
 
 	const workout = ctrl.workout;
-
-	const cursor = useMemo<Ref | null>(() => {
-		if (!workout) return null;
-		if (
-			rawCursor &&
-			workout.exercises[rawCursor.e] &&
-			workout.exercises[rawCursor.e].sets[rawCursor.s]
-		) {
-			return rawCursor;
-		}
-		return firstNotDone(workout) ?? { e: 0, s: 0 };
-	}, [workout, rawCursor]);
-
-	useEffect(() => {
-		if (workout && !rawCursor) setCursor(firstNotDone(workout) ?? { e: 0, s: 0 });
-	}, [workout, rawCursor]);
 
 	if (ctrl.phase === 'loading') {
 		return (
@@ -370,22 +313,52 @@ function ActiveWorkout(): ReactElement {
 		);
 	}
 
-	if (ctrl.phase === 'none' || !workout || !cursor) {
+	if (ctrl.phase === 'none' || !workout) {
 		return (
 			<div className="gymmd-view gymmd-dark">
 				<h2>No active workout</h2>
 				<p className="gymmd-empty">Start one from a template to begin logging.</p>
-				<button
-					className="mod-cta"
-					onClick={() => void plugin.activateView(VIEW_TYPE_TEMPLATES)}
-				>
+				<button className="mod-cta" onClick={() => void plugin.activateView(VIEW_TYPE_TEMPLATES)}>
 					Choose a template
 				</button>
 			</div>
 		);
 	}
 
+	const startSetAt = (ref: Ref) => {
+		const ts = nowISODateTime();
+		ctrl.mutate((w) => {
+			const t = w.exercises[ref.e].sets[ref.s];
+			t.started = ts;
+			if (t.reps === null) t.reps = t.planned_reps;
+			if (t.weight === null) t.weight = t.planned_weight;
+			w.current_phase_started = ts;
+			if (!w.started) w.started = ts;
+		});
+		setActiveRef(ref);
+		setTab('stopwatch');
+	};
+
+	const endActiveSet = () => {
+		if (!activeRef) return;
+		ctrl.mutate((w) => {
+			const t = w.exercises[activeRef.e].sets[activeRef.s];
+			const startedMs = parseISODateTime(t.started);
+			t.duration_seconds =
+				startedMs !== null ? Math.max(0, Math.round((Date.now() - startedMs) / 1000)) : null;
+			t.done = true;
+			w.current_phase_started = nowISODateTime();
+		});
+		setActiveRef(null);
+	};
+
 	const onFinish = async () => {
+		const ok = await confirm(plugin.app, {
+			title: 'Finish workout',
+			message: 'Finish this workout and move it to completed?',
+			cta: 'Finish',
+		});
+		if (!ok) return;
 		const current = await ctrl.flushAndGet();
 		if (!current) return;
 		const moved = await runFinishFlow(plugin, current.file, current.workout);
@@ -409,6 +382,8 @@ function ActiveWorkout(): ReactElement {
 		ctrl.clear();
 		new Notice('Workout abandoned');
 	};
+
+	const actions: SetActions = { ctrl, activeRef, startSetAt, endActiveSet, onFinish: () => void onFinish() };
 
 	return (
 		<div className="gymmd-view gymmd-dark gymmd-active">
@@ -443,18 +418,9 @@ function ActiveWorkout(): ReactElement {
 			</div>
 
 			{tab === 'stopwatch' ? (
-				<StopwatchTab
-					ctrl={ctrl}
-					workout={workout}
-					cursor={cursor}
-					setCursor={setCursor}
-					activeRef={activeRef}
-					setActiveRef={setActiveRef}
-					snapshot={snapshot}
-					setSnapshot={setSnapshot}
-				/>
+				<StopwatchTab workout={workout} actions={actions} />
 			) : (
-				<AllSetsTab ctrl={ctrl} workout={workout} />
+				<AllSetsTab workout={workout} actions={actions} />
 			)}
 		</div>
 	);
