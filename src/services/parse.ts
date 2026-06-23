@@ -119,10 +119,9 @@ export function templateFromFrontmatter(fm: Rec): Template | null {
 function workoutSet(s: Rec): WorkoutSet {
 	return {
 		set: asNumber(s.set),
-		planned_reps: asNumberOrNull(s.planned_reps),
-		planned_weight: asNumberOrNull(s.planned_weight),
-		reps: asNumberOrNull(s.reps),
-		weight: asNumberOrNull(s.weight),
+		// Fall back to legacy planned_* for any pre-existing files.
+		reps: asNumberOrNull(s.reps ?? s.planned_reps),
+		weight: asNumberOrNull(s.weight ?? s.planned_weight),
 		done: asBool(s.done),
 		started: s.started ? asString(s.started) : null,
 		duration_seconds: asNumberOrNull(s.duration_seconds),

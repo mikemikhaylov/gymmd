@@ -15,11 +15,6 @@ interface Ref {
 	s: number;
 }
 
-function weightLabel(w: number | null): string {
-	if (w === null) return '—';
-	return w === 0 ? 'BW' : String(w);
-}
-
 function firstNotDone(w: Workout): Ref | null {
 	for (let e = 0; e < w.exercises.length; e++) {
 		for (let s = 0; s < w.exercises[e].sets.length; s++) {
@@ -82,17 +77,12 @@ function StopwatchTab({
 				(() => {
 					const exercise = workout.exercises[displayRef.e];
 					const set = exercise.sets[displayRef.s];
-					const repsValue = isActive ? set.reps : set.planned_reps;
-					const weightValue = isActive ? set.weight : set.planned_weight;
 					return (
 						<>
 							<div className="gymmd-current-exercise">{exercise.name}</div>
 							<div className="gymmd-set-indicator">
 								Set {displayRef.s + 1} of {exercise.sets.length}
-							</div>
-
-							<div className="gymmd-target">
-								Target: {set.planned_reps ?? '—'} reps × {weightLabel(set.planned_weight)} kg
+								{isActive ? ' · in progress' : ''}
 							</div>
 
 							<div className="gymmd-inputs">
@@ -101,8 +91,7 @@ function StopwatchTab({
 									<input
 										type="number"
 										min={0}
-										disabled={!isActive}
-										value={repsValue ?? ''}
+										value={set.reps ?? ''}
 										onChange={(e) => editField('reps', numFromInput(e.target.value))}
 									/>
 								</label>
@@ -112,8 +101,7 @@ function StopwatchTab({
 										type="number"
 										min={0}
 										step="0.5"
-										disabled={!isActive}
-										value={weightValue ?? ''}
+										value={set.weight ?? ''}
 										onChange={(e) => editField('weight', numFromInput(e.target.value))}
 									/>
 								</label>
@@ -161,9 +149,12 @@ function AllSetsTab({
 			w.exercises[e].sets[s][field] = value;
 		});
 
-	const toggleDone = (e: number, s: number) =>
+	const undoSet = (e: number, s: number) =>
 		ctrl.mutate((w) => {
-			w.exercises[e].sets[s].done = !w.exercises[e].sets[s].done;
+			const t = w.exercises[e].sets[s];
+			t.done = false;
+			t.started = null;
+			t.duration_seconds = null;
 		});
 
 	const addSet = (e: number) =>
@@ -172,10 +163,8 @@ function AllSetsTab({
 			const last = sets[sets.length - 1];
 			sets.push({
 				set: sets.length + 1,
-				planned_reps: last ? last.planned_reps : null,
-				planned_weight: last ? last.planned_weight : null,
-				reps: null,
-				weight: null,
+				reps: last ? last.reps : null,
+				weight: last ? last.weight : null,
 				done: false,
 				started: null,
 				duration_seconds: null,
@@ -232,10 +221,9 @@ function AllSetsTab({
 						<thead>
 							<tr>
 								<th>Set</th>
-								<th>Plan</th>
 								<th>Reps</th>
 								<th>Weight</th>
-								<th>Done</th>
+								<th>Status</th>
 								<th></th>
 							</tr>
 						</thead>
@@ -245,9 +233,6 @@ function AllSetsTab({
 								return (
 									<tr key={si} className={s.done ? 'gymmd-done' : ''}>
 										<td>{si + 1}</td>
-										<td className="gymmd-muted">
-											{s.planned_reps ?? '—'}×{weightLabel(s.planned_weight)}
-										</td>
 										<td>
 											<input
 												type="number"
@@ -266,15 +251,17 @@ function AllSetsTab({
 											/>
 										</td>
 										<td>
-											<input type="checkbox" checked={s.done} onChange={() => toggleDone(e, si)} />
+											{s.done ? (
+												<button onClick={() => undoSet(e, si)}>✓ Done · undo</button>
+											) : active ? (
+												<span className="gymmd-inprogress">● active</span>
+											) : (
+												<button className="mod-cta" onClick={() => startSetAt({ e, s: si })}>
+													Start
+												</button>
+											)}
 										</td>
 										<td className="gymmd-row-actions">
-											{!s.done &&
-												(active ? (
-													<span className="gymmd-inprogress">● active</span>
-												) : (
-													<button onClick={() => startSetAt({ e, s: si })}>Start</button>
-												))}
 											<button onClick={() => moveSet(e, si, -1)} disabled={si === 0}>
 												↑
 											</button>
@@ -330,8 +317,6 @@ function ActiveWorkout(): ReactElement {
 		ctrl.mutate((w) => {
 			const t = w.exercises[ref.e].sets[ref.s];
 			t.started = ts;
-			if (t.reps === null) t.reps = t.planned_reps;
-			if (t.weight === null) t.weight = t.planned_weight;
 			w.current_phase_started = ts;
 			if (!w.started) w.started = ts;
 		});

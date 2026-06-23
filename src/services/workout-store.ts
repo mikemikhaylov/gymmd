@@ -76,10 +76,8 @@ export class WorkoutStore {
 				order: ex.order,
 				sets: ex.sets.map((s) => ({
 					set: s.set,
-					planned_reps: s.reps,
-					planned_weight: s.weight,
-					reps: null,
-					weight: null,
+					reps: s.reps,
+					weight: s.weight,
 					done: false,
 					started: null,
 					duration_seconds: null,

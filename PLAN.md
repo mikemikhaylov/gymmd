@@ -187,24 +187,18 @@ exercises:
     order: 1
     sets:
       - set: 1
-        planned_reps: 10
-        planned_weight: 60
         reps: 10
         weight: 60
         done: true
         started: "2026-06-20T18:02:11"
         duration_seconds: 42
       - set: 2
-        planned_reps: 8
-        planned_weight: 65
         reps: 8
         weight: 65
         done: true
         started: "2026-06-20T18:05:30"
         duration_seconds: 38
       - set: 3
-        planned_reps: 8
-        planned_weight: 65
         reps: 7
         weight: 65
         done: true
@@ -215,26 +209,20 @@ exercises:
     order: 2
     sets:
       - set: 1
-        planned_reps: 10
-        planned_weight: 30
         reps: 10
         weight: 30
         done: true
         started: "2026-06-20T18:14:55"
         duration_seconds: 35
       - set: 2
-        planned_reps: 8
-        planned_weight: 32.5
-        reps:
-        weight:
+        reps: 8
+        weight: 32.5
         done: false
         started:
         duration_seconds:
       - set: 3
-        planned_reps: 8
-        planned_weight: 32.5
-        reps:
-        weight:
+        reps: 8
+        weight: 32.5
         done: false
         started:
         duration_seconds:
@@ -243,26 +231,20 @@ exercises:
     order: 3
     sets:
       - set: 1
-        planned_reps: 12
-        planned_weight: 20
-        reps:
-        weight:
+        reps: 12
+        weight: 20
         done: false
         started:
         duration_seconds:
       - set: 2
-        planned_reps: 12
-        planned_weight: 20
-        reps:
-        weight:
+        reps: 12
+        weight: 20
         done: false
         started:
         duration_seconds:
       - set: 3
-        planned_reps: 10
-        planned_weight: 22.5
-        reps:
-        weight:
+        reps: 10
+        weight: 22.5
         done: false
         started:
         duration_seconds:
@@ -271,32 +253,33 @@ exercises:
 # Push Day — 2026-06-20
 
 ## Bench Press
-| Set | Planned Reps | Planned Weight | Reps | Weight (kg) | Done | Started | Duration (s) |
-|---|---|---|---|---|---|---|---|
-| 1 | 10 | 60 | 10 | 60 | ✅ | 18:02:11 | 42 |
-| 2 | 8 | 65 | 8 | 65 | ✅ | 18:05:30 | 38 |
-| 3 | 8 | 65 | 7 | 65 | ✅ | 18:09:02 | 45 |
+| Set | Reps | Weight (kg) | Done | Started | Duration (s) |
+|---|---|---|---|---|---|
+| 1 | 10 | 60 | ✅ | 18:02:11 | 42 |
+| 2 | 8 | 65 | ✅ | 18:05:30 | 38 |
+| 3 | 7 | 65 | ✅ | 18:09:02 | 45 |
 
 ## Overhead Press
-| Set | Planned Reps | Planned Weight | Reps | Weight (kg) | Done | Started | Duration (s) |
-|---|---|---|---|---|---|---|---|
-| 1 | 10 | 30 | 10 | 30 | ✅ | 18:14:55 | 35 |
-| 2 | 8 | 32.5 |  |  | ⬜ |  |  |
-| 3 | 8 | 32.5 |  |  | ⬜ |  |  |
+| Set | Reps | Weight (kg) | Done | Started | Duration (s) |
+|---|---|---|---|---|---|
+| 1 | 10 | 30 | ✅ | 18:14:55 | 35 |
+| 2 | 8 | 32.5 | ⬜ |  |  |
+| 3 | 8 | 32.5 | ⬜ |  |  |
 
 ## Tricep Pushdown
-| Set | Planned Reps | Planned Weight | Reps | Weight (kg) | Done | Started | Duration (s) |
-|---|---|---|---|---|---|---|---|
-| 1 | 12 | 20 |  |  | ⬜ |  |  |
-| 2 | 12 | 20 |  |  | ⬜ |  |  |
-| 3 | 10 | 22.5 |  |  | ⬜ |  |  |
+| Set | Reps | Weight (kg) | Done | Started | Duration (s) |
+|---|---|---|---|---|---|
+| 1 | 12 | 20 | ⬜ |  |  |
+| 2 | 12 | 20 | ⬜ |  |  |
+| 3 | 10 | 22.5 | ⬜ |  |  |
 ```
 
 Notes:
 - **`status`** (`in_progress` → `completed`, or `in_progress` → `abandoned`) is authoritative; the plugin moves the file between `active/`, `completed/`, and `abandoned/` to match, via `app.fileManager.renameFile()` (preserves any wikilinks pointing at it).
 - **`current_phase_started`**: the single timestamp the live stopwatch needs. Present only while `in_progress`, cleared on completion. On plugin load, if a workout has `status: in_progress`, the timer is recomputed as `Date.now() - current_phase_started` — not from a running interval, so it's correct immediately after reopening Obsidian regardless of how long it was closed.
-- **Planned vs actual columns both present** on every set row — plan is fixed when the workout starts (or copied from the template), actual is filled in live and freely editable afterward, anywhere, on any set (past, current, or future).
-- **Adding sets mid-workout**: plugin appends a new entry to both the `sets` array and the table row for that exercise; `planned_*` can be left blank or mirror the actual values for ad-hoc sets. No new exercises can be added mid-workout — only new sets to exercises already in the workout.
+- **No separate planned/actual fields.** Each set has a single `reps`/`weight`, copied from the template when the workout is created. They are visible and editable on **every** set from the start (so you can see and adjust the prescription before you begin), and `done` is a plain boolean. There is no `planned_reps`/`planned_weight`. (The parser still reads legacy `planned_*` from any pre-existing files.)
+- **`done` is set only by the Start → End stopwatch flow** (End stamps `duration_seconds` and sets `done: true`). In the All-Sets tab you can **undo** a set (clears `done`, `started`, `duration_seconds`) but cannot tick it done directly — completion always goes through the timer.
+- **Adding sets mid-workout**: plugin appends a new entry to both the `sets` array and the table row for that exercise; a new ad-hoc set copies `reps`/`weight` from the previous set. No new exercises can be added mid-workout — only new sets to exercises already in the workout.
 - **Incomplete sets on finish**: if the workout ends while some sets are `done: false`, those sets are kept in the completed file as-is (with blank actuals). This records the intended plan faithfully — a cut-short workout is not the same as a different workout. The template is NOT pruned to match what was actually done.
 - Frontmatter summary fields (`total_volume_kg`, `total_sets_completed`, etc.) are recomputed by the plugin on every change.
 - **Timestamp format**: all datetime values (`started`, `current_phase_started`, `completed`, per-set `started`) are stored as **quoted ISO-8601 strings** (e.g. `"2026-06-20T18:02:11"`), never as bare YAML timestamps — this keeps `metadataCache` parsing predictable and avoids timezone auto-coercion. `date` is a plain `YYYY-MM-DD` date.
@@ -309,19 +292,19 @@ Two tabs, **dark theme only** — forced via a scoped CSS class, independent of 
 
 ### Tab 1 — Stopwatch
 - One large centered timer. Sits at `0:00` until the first **Start Set** press. Resets to `0` and restarts on **every** press of Start Set or End Set (single continuous counter). `current_phase_started` is the file-persisted anchor, so the timer is correct after reopening Obsidian.
-- The stopwatch shows the **current set** = the active (in-progress) set if there is one, otherwise the **first not-done set**. Planned reps/weight are shown **before** starting (a "Target: R reps × W kg" line plus the values filled into the disabled inputs) so you can load the bar before pressing Start. There is **no manual prev/next** — the Start/End button is the only navigation here.
+- The stopwatch shows the **current set** = the active (in-progress) set if there is one, otherwise the **first not-done set**. Its `reps`/`weight` (copied from the template) are shown and **editable at any time**, including before you press Start — so you can see and adjust the prescription before loading the bar. There is **no manual prev/next** — the Start/End button is the only navigation here.
 - One big button pinned to the **bottom of the screen**:
-    - **Start Set** → timer resets & starts, the reps/weight inputs become editable (pre-filled from planned), button becomes **End Set**, and this set is marked active (reflected in Tab 2).
+    - **Start Set** → timer resets & starts, button becomes **End Set**, and this set is marked active (reflected in Tab 2).
     - **End Set** → commits `reps`/`weight`/`duration_seconds`, marks `done: true`, timer resets & restarts, and the current set advances to the **first remaining not-done set** (anywhere in the workout, not just the next one).
     - When **all sets are done**, the button becomes **Finish Workout** (runs the §7 finish flow, including the template-update prompt if anything diverged).
 - There is no separate "discard set" — to undo a set, switch to **All Sets** and uncheck its **Done** box.
 
 ### Tab 2 — All Sets
-- Sets grouped by exercise, in order, each row showing planned vs actual, done/not-done state.
-- Inline editing of reps/weight on any set, completed or not.
-- **Start** button on any not-done set → starts it as the active set and switches to the Stopwatch (the two tabs share one active-set state). The currently active set shows "● active" instead.
-- Toggle **Done** on any set (this is how you un-mark a set you didn't actually finish).
-- Add new set to any exercise block (ad-hoc sets — `planned_*` mirrors actual on entry). **Deleting a set asks for confirmation.**
+- Sets grouped by exercise, in order. Every set shows its `reps`/`weight` (from the template) and `done` state from the start.
+- Inline editing of reps/weight on any set at any time, completed or not.
+- **Start** button on any not-done set → starts it as the active set and switches to the Stopwatch (the two tabs share one active-set state). The currently active set shows "● active".
+- A completed set shows **✓ Done · undo**; pressing undo clears `done`/`started`/`duration_seconds`. You cannot tick a set done here — completion only happens through Start → End.
+- Add new set to any exercise block (a new set copies the previous set's `reps`/`weight`). **Deleting a set asks for confirmation.**
 - Reorder exercise blocks and reorder sets within a block (simple up/down controls — no drag-and-drop dependency needed).
 - **No adding new exercises mid-workout.** The exercise list is fixed at workout creation time. If the exercise list needs changing, finish or abandon and create a new workout.
 

@@ -59,8 +59,7 @@ export type WorkoutStatus = 'in_progress' | 'completed' | 'abandoned';
 
 export interface WorkoutSet {
 	set: number;
-	planned_reps: number | null;
-	planned_weight: number | null;
+	/** Copied from the template at creation; visible and editable at any time. */
 	reps: number | null;
 	weight: number | null;
 	done: boolean;

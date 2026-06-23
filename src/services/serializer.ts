@@ -128,8 +128,6 @@ export function serializeWorkout(w: Workout): string {
 		fm.push('    sets:');
 		for (const s of ex.sets) {
 			fm.push(`      - ${line(0, 'set', s.set).trimStart()}`);
-			fm.push(line(4, 'planned_reps', s.planned_reps));
-			fm.push(line(4, 'planned_weight', s.planned_weight));
 			fm.push(line(4, 'reps', s.reps));
 			fm.push(line(4, 'weight', s.weight));
 			fm.push(line(4, 'done', s.done));
@@ -141,14 +139,12 @@ export function serializeWorkout(w: Workout): string {
 	const bodyParts: string[] = [`# ${w.template_name} — ${w.date}`, ''];
 	for (const ex of w.exercises) {
 		bodyParts.push(`## ${ex.name}`);
-		bodyParts.push(
-			'| Set | Planned Reps | Planned Weight | Reps | Weight (kg) | Done | Started | Duration (s) |',
-		);
-		bodyParts.push('|---|---|---|---|---|---|---|---|');
+		bodyParts.push('| Set | Reps | Weight (kg) | Done | Started | Duration (s) |');
+		bodyParts.push('|---|---|---|---|---|---|');
 		for (const s of ex.sets) {
 			const done = s.done ? '✅' : '⬜';
 			bodyParts.push(
-				`| ${s.set} | ${numCell(s.planned_reps)} | ${weightCell(s.planned_weight)} | ${numCell(s.reps)} | ${weightCell(s.weight)} | ${done} | ${timeOfDay(s.started)} | ${numCell(s.duration_seconds)} |`,
+				`| ${s.set} | ${numCell(s.reps)} | ${weightCell(s.weight)} | ${done} | ${timeOfDay(s.started)} | ${numCell(s.duration_seconds)} |`,
 			);
 		}
 		bodyParts.push('');
