@@ -294,7 +294,7 @@ function ActiveWorkout(): ReactElement {
 
 	if (ctrl.phase === 'loading') {
 		return (
-			<div className="gymmd-view gymmd-dark">
+			<div className="gymmd-view">
 				<p>Loading…</p>
 			</div>
 		);
@@ -302,7 +302,7 @@ function ActiveWorkout(): ReactElement {
 
 	if (ctrl.phase === 'none' || !workout) {
 		return (
-			<div className="gymmd-view gymmd-dark">
+			<div className="gymmd-view">
 				<h2>No active workout</h2>
 				<p className="gymmd-empty">Start one from a template to begin logging.</p>
 				<button className="mod-cta" onClick={() => void plugin.activateView(VIEW_TYPE_TEMPLATES)}>
@@ -371,7 +371,7 @@ function ActiveWorkout(): ReactElement {
 	const actions: SetActions = { ctrl, activeRef, startSetAt, endActiveSet, onFinish: () => void onFinish() };
 
 	return (
-		<div className="gymmd-view gymmd-dark gymmd-active">
+		<div className="gymmd-view gymmd-active">
 			<div className="gymmd-header">
 				<h2>{workout.template_name}</h2>
 				<span className="gymmd-row-actions">

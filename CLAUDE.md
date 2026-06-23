@@ -44,7 +44,7 @@ src/
   utils/               # ID generation, date helpers, constants
 manifest.json          # Plugin metadata — never change `id` after release
 versions.json          # Maps plugin version → minimum Obsidian app version
-styles.css             # Plugin-scoped CSS (dark gym-UI theme lives here)
+styles.css             # Plugin CSS, built on Obsidian's theme variables
 esbuild.config.mjs     # Build config — jsx:automatic, outfile:main.js
 tsconfig.json          # jsx:react-jsx, moduleResolution:bundler, strict:true
 ```
@@ -76,7 +76,7 @@ Core invariants (see PLAN.md §11):
 - **Every workout starts from a template** — there is no "from scratch" creation. To add an exercise, edit a template first.
 - **Workout `status` drives folder placement** — `in_progress` → `active/`, `completed` → `completed/`, `abandoned` → `abandoned/`, moved via `fileManager.renameFile()`.
 - **Timestamps are quoted ISO-8601 strings**; timer state derives from the stored `current_phase_started`, never a running interval.
-- **Active Workout UI is dark-theme-only**, scoped via CSS class, independent of the vault theme.
+- **UI is styled with Obsidian CSS variables** (`var(--interactive-accent)`, `var(--background-secondary)`, `var(--text-muted)`, `var(--size-4-*)`, `var(--radius-*)`, …) so it follows the user's theme. No hardcoded colors / no forced dark mode.
 
 ## Implementation status
 

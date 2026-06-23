@@ -288,7 +288,7 @@ Notes:
 
 ## 6. Live "Active Workout" UI
 
-Two tabs, **dark theme only** — forced via a scoped CSS class, independent of the vault theme. (All GymMD views render dark for consistency.) Large tap targets for phone use in the gym. Header has **Finish** and **Abandon**, both of which ask for confirmation; Abandon/finish/delete confirmations use the `mod-warning` button class (version-safe, no dependency on the 1.13 `setDestructive` API).
+Two tabs. The UI is **styled entirely with Obsidian's CSS variables**, so it follows the user's active theme (light or dark) and looks native — no forced colors. Large tap targets for phone use in the gym. Header has **Finish** and **Abandon**, both of which ask for confirmation; Abandon/finish/delete confirmations use the `mod-warning` button class (version-safe, no dependency on the 1.13 `setDestructive` API).
 
 ### Tab 1 — Stopwatch
 - One large centered timer. Sits at `0:00` until the first **Start Set** press. Resets to `0` and restarts on **every** press of Start Set or End Set (single continuous counter). `current_phase_started` is the file-persisted anchor, so the timer is correct after reopening Obsidian.

@@ -59,7 +59,7 @@ function ExerciseList(): ReactElement {
 	};
 
 	return (
-		<div className="gymmd-view gymmd-dark">
+		<div className="gymmd-view">
 			<div className="gymmd-header">
 				<h2>Exercises</h2>
 				<button className="mod-cta" onClick={() => void onAdd()}>

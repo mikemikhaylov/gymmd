@@ -63,7 +63,7 @@ function TemplateList(): ReactElement {
 	};
 
 	return (
-		<div className="gymmd-view gymmd-dark">
+		<div className="gymmd-view">
 			<div className="gymmd-header">
 				<h2>Templates</h2>
 				<button className="mod-cta" onClick={() => void onCreate()}>

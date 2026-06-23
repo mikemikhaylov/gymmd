@@ -6,7 +6,7 @@ queryable by Dataview/Bases and readable by an AI coach. See [`PLAN.md`](PLAN.md
 for the full design and [`CLAUDE.md`](CLAUDE.md) for the architecture.
 
 - **Exercises**, **Templates**, and **Workouts** are separate, stably-linked files.
-- Live "Active Workout" view with a stopwatch and an all-sets editor (dark, gym-friendly).
+- Live "Active Workout" view with a stopwatch and an all-sets editor, styled to match your Obsidian theme.
 - A workout in progress survives closing/reopening Obsidian.
 - Works on desktop **and mobile** (`isDesktopOnly: false`).
 

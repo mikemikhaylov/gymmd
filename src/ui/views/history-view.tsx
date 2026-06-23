@@ -21,7 +21,7 @@ function History(): ReactElement {
 	};
 
 	return (
-		<div className="gymmd-view gymmd-dark">
+		<div className="gymmd-view">
 			<div className="gymmd-header">
 				<h2>Workout history</h2>
 				<button onClick={() => void refresh()}>Refresh</button>

@@ -170,7 +170,7 @@ export function TemplateEditor({ file, initial, onSaved, close }: Props): ReactE
 	};
 
 	return (
-		<div className="gymmd-editor gymmd-dark">
+		<div className="gymmd-editor">
 			<div className="gymmd-header">
 				<h3>
 					{template.name}{' '}
