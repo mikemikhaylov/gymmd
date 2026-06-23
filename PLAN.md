@@ -2,7 +2,7 @@
 
 ## 0. Goal
 
-A markdown-native Obsidian plugin for logging gym workouts (Strong/Whoop-style), where:
+A markdown-native Obsidian plugin for logging gym workouts, where:
 - All data is stored as plain, human-editable markdown files in the vault.
 - Frontmatter carries full structured data (not just summaries) so Dataview/Bases can query it directly.
 - Exercises, Templates, and Workouts are three separate, stably-linked entities.
