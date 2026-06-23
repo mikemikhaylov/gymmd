@@ -7,7 +7,6 @@ export interface GymMDPaths {
 	templates: string;
 	active: string;
 	completed: string;
-	abandoned: string;
 }
 
 export function resolvePaths(s: GymMDSettings): GymMDPaths {
@@ -19,7 +18,6 @@ export function resolvePaths(s: GymMDSettings): GymMDPaths {
 		templates: join(s.templatesFolder),
 		active: join(s.activeFolder),
 		completed: join(s.completedFolder),
-		abandoned: join(s.abandonedFolder),
 	};
 }
 
@@ -31,7 +29,6 @@ export async function ensureFolders(app: App, paths: GymMDPaths): Promise<void> 
 		paths.templates,
 		paths.active,
 		paths.completed,
-		paths.abandoned,
 	];
 	for (const path of ordered) {
 		if (!app.vault.getAbstractFileByPath(path)) {

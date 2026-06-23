@@ -55,7 +55,7 @@ export interface Template {
 
 // --- Workout --------------------------------------------------------------
 
-export type WorkoutStatus = 'in_progress' | 'completed' | 'abandoned';
+export type WorkoutStatus = 'in_progress' | 'completed';
 
 export interface WorkoutSet {
 	set: number;

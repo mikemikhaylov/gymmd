@@ -129,7 +129,7 @@
 	font-size: var(--font-ui-smaller);
 }
 
-.gymmd-set-table input[type='number'] {
+.gymmd-set-table input {
 	width: 72px;
 }
 

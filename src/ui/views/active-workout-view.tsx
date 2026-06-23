@@ -8,6 +8,7 @@ import { useActiveWorkout, type ActiveWorkoutController } from '../hooks/use-act
 import { useNow } from '../hooks/use-now';
 import { confirm } from '../modals/prompts';
 import { runFinishFlow } from '../modals/finish-flow';
+import { NumberField } from '../components/number-field';
 import { ReactItemView } from './react-view';
 
 interface Ref {
@@ -26,12 +27,6 @@ function firstNotDone(w: Workout): Ref | null {
 
 function sameRef(a: Ref | null, b: Ref | null): boolean {
 	return !!a && !!b && a.e === b.e && a.s === b.s;
-}
-
-function numFromInput(value: string): number | null {
-	if (value.trim() === '') return null;
-	const n = Number(value);
-	return Number.isFinite(n) ? n : null;
 }
 
 interface SetActions {
@@ -88,21 +83,18 @@ function StopwatchTab({
 							<div className="gymmd-inputs">
 								<label>
 									Reps
-									<input
-										type="number"
-										min={0}
-										value={set.reps ?? ''}
-										onChange={(e) => editField('reps', numFromInput(e.target.value))}
+									<NumberField
+										kind="reps"
+										value={set.reps}
+										onChange={(v) => editField('reps', v)}
 									/>
 								</label>
 								<label>
 									Weight (kg)
-									<input
-										type="number"
-										min={0}
-										step="0.5"
-										value={set.weight ?? ''}
-										onChange={(e) => editField('weight', numFromInput(e.target.value))}
+									<NumberField
+										kind="weight"
+										value={set.weight}
+										onChange={(v) => editField('weight', v)}
 									/>
 								</label>
 							</div>
@@ -234,20 +226,17 @@ function AllSetsTab({
 									<tr key={si} className={s.done ? 'gymmd-done' : ''}>
 										<td>{si + 1}</td>
 										<td>
-											<input
-												type="number"
-												min={0}
-												value={s.reps ?? ''}
-												onChange={(ev) => editSet(e, si, 'reps', numFromInput(ev.target.value))}
+											<NumberField
+												kind="reps"
+												value={s.reps}
+												onChange={(v) => editSet(e, si, 'reps', v)}
 											/>
 										</td>
 										<td>
-											<input
-												type="number"
-												min={0}
-												step="0.5"
-												value={s.weight ?? ''}
-												onChange={(ev) => editSet(e, si, 'weight', numFromInput(ev.target.value))}
+											<NumberField
+												kind="weight"
+												value={s.weight}
+												onChange={(v) => editSet(e, si, 'weight', v)}
 											/>
 										</td>
 										<td>
@@ -353,33 +342,15 @@ function ActiveWorkout(): ReactElement {
 		}
 	};
 
-	const onAbandon = async () => {
-		const ok = await confirm(plugin.app, {
-			title: 'Abandon workout',
-			message: 'Move this workout to Abandoned? Completed sets are preserved.',
-			cta: 'Abandon',
-			danger: true,
-		});
-		if (!ok) return;
-		const current = await ctrl.flushAndGet();
-		if (!current) return;
-		await plugin.workouts.abandon(current.file, current.workout);
-		ctrl.clear();
-		new Notice('Workout abandoned');
-	};
-
 	const actions: SetActions = { ctrl, activeRef, startSetAt, endActiveSet, onFinish: () => void onFinish() };
 
 	return (
 		<div className="gymmd-view gymmd-active">
 			<div className="gymmd-header">
 				<h2>{workout.template_name}</h2>
-				<span className="gymmd-row-actions">
-					<button className="mod-cta" onClick={() => void onFinish()}>
-						Finish
-					</button>
-					<button onClick={() => void onAbandon()}>Abandon</button>
-				</span>
+				<button className="mod-cta" onClick={() => void onFinish()}>
+					Finish
+				</button>
 			</div>
 
 			<div className="gymmd-progress gymmd-muted">

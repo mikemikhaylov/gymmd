@@ -69,7 +69,7 @@ auto-reloads any plugin when its `main.js` changes.
 
 ### d. First run
 
-The folders (`workouts/exercises`, `templates`, `active`, `completed`, `abandoned`)
+The folders (`workouts/exercises`, `templates`, `active`, `completed`)
 are created automatically the first time you add data. Start by creating a couple of
 exercises, then a template, then press **Start** on the template.
 

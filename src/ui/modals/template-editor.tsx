@@ -5,6 +5,7 @@ import type { Exercise, Template } from '../../types';
 import { entryUid } from '../../utils/id';
 import { usePlugin } from '../context';
 import { promptText } from './prompts';
+import { NumberField } from '../components/number-field';
 
 interface Props {
 	file: TFile;
@@ -230,24 +231,17 @@ export function TemplateEditor({ file, initial, onSaved, close }: Props): ReactE
 								<tr key={setIndex}>
 									<td>{setIndex + 1}</td>
 									<td>
-										<input
-											type="number"
+										<NumberField
+											kind="reps"
 											value={s.reps}
-											min={0}
-											onChange={(e) =>
-												editSet(exIndex, setIndex, 'reps', Number(e.target.value))
-											}
+											onChange={(v) => editSet(exIndex, setIndex, 'reps', v ?? 0)}
 										/>
 									</td>
 									<td>
-										<input
-											type="number"
+										<NumberField
+											kind="weight"
 											value={s.weight}
-											min={0}
-											step="0.5"
-											onChange={(e) =>
-												editSet(exIndex, setIndex, 'weight', Number(e.target.value))
-											}
+											onChange={(v) => editSet(exIndex, setIndex, 'weight', v ?? 0)}
 										/>
 									</td>
 									<td className="gymmd-row-actions">

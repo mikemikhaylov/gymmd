@@ -110,13 +110,6 @@ export class WorkoutStore {
 		return this.moveTo(file, workout, this.paths().completed);
 	}
 
-	async abandon(file: TFile, workout: Workout): Promise<TFile> {
-		workout.status = 'abandoned';
-		workout.current_phase_started = null;
-		recomputeWorkoutSummary(workout);
-		return this.moveTo(file, workout, this.paths().abandoned);
-	}
-
 	private async moveTo(file: TFile, workout: Workout, folder: string): Promise<TFile> {
 		await ensureFolders(this.app, this.paths());
 		await writeFile(this.app, file, serializeWorkout(workout));

@@ -17,7 +17,7 @@ A markdown-native Obsidian plugin for logging gym workouts, where:
 |---|---|---|
 | **Exercise** | Named movement with a stable ID | Created once, renamed freely, archived not deleted |
 | **Template** | Reusable workout plan (exercises + planned sets) | Created, edited anytime; can be updated from a finished workout if it diverged |
-| **Workout** | One performed instance, always created from a template | Created → lives in `active/` while in progress → moved to `completed/` on finish (or `abandoned/` if discarded) |
+| **Workout** | One performed instance, always created from a template | Created → lives in `active/` while in progress → moved to `completed/` on finish |
 
 Templates and Workouts are **separate files**, not one object with a status field. A Workout may reference the Template it started from, but is independent once created — editing it never silently mutates the template.
 
@@ -40,8 +40,6 @@ VaultRoot/
     completed/
       2026-06-18 Push Day.md
       2026-06-15 Leg Day.md
-    abandoned/
-      2026-06-14 Leg Day.md           ← workouts discarded mid-session
 ```
 
 - Folder names default to lowercase (`workouts/exercises/…`); all configurable in settings. File names keep their natural casing (`Push Day.md`).
@@ -275,7 +273,7 @@ exercises:
 ```
 
 Notes:
-- **`status`** (`in_progress` → `completed`, or `in_progress` → `abandoned`) is authoritative; the plugin moves the file between `active/`, `completed/`, and `abandoned/` to match, via `app.fileManager.renameFile()` (preserves any wikilinks pointing at it).
+- **`status`** (`in_progress` → `completed`) is authoritative; the plugin moves the file from `active/` to `completed/` to match, via `app.fileManager.renameFile()` (preserves any wikilinks pointing at it). To discard a workout, just delete its file from `active/`.
 - **`current_phase_started`**: the single timestamp the live stopwatch needs. Present only while `in_progress`, cleared on completion. On plugin load, if a workout has `status: in_progress`, the timer is recomputed as `Date.now() - current_phase_started` — not from a running interval, so it's correct immediately after reopening Obsidian regardless of how long it was closed.
 - **No separate planned/actual fields.** Each set has a single `reps`/`weight`, copied from the template when the workout is created. They are visible and editable on **every** set from the start (so you can see and adjust the prescription before you begin), and `done` is a plain boolean. There is no `planned_reps`/`planned_weight`. (The parser still reads legacy `planned_*` from any pre-existing files.)
 - **`done` is set only by the Start → End stopwatch flow** (End stamps `duration_seconds` and sets `done: true`). In the All-Sets tab you can **undo** a set (clears `done`, `started`, `duration_seconds`) but cannot tick it done directly — completion always goes through the timer.
@@ -288,7 +286,9 @@ Notes:
 
 ## 6. Live "Active Workout" UI
 
-Two tabs. The UI is **styled entirely with Obsidian's CSS variables**, so it follows the user's active theme (light or dark) and looks native — no forced colors. Large tap targets for phone use in the gym. Header has **Finish** and **Abandon**, both of which ask for confirmation; Abandon/finish/delete confirmations use the `mod-warning` button class (version-safe, no dependency on the 1.13 `setDestructive` API).
+Two tabs. The UI is **styled entirely with Obsidian's CSS variables**, so it follows the user's active theme (light or dark) and looks native — no forced colors. Large tap targets for phone use in the gym. The header has a single **Finish** button, which asks for confirmation. There is no "abandon" — to discard a workout, finish it and delete the file, or delete the in-progress file from the `active/` folder directly. (Confirmations use the `mod-warning` button class — version-safe, no dependency on the 1.13 `setDestructive` API.)
+
+**Input validation** (reps/weight fields everywhere): reps must be a positive integer 1–999; weight must be ≥ 0 with at most two decimal places (`1.75` ok, `1.757` rejected). Enforced by a shared `NumberField` component.
 
 ### Tab 1 — Stopwatch
 - One large centered timer. Sits at `0:00` until the first **Start Set** press. Resets to `0` and restarts on **every** press of Start Set or End Set (single continuous counter). `current_phase_started` is the file-persisted anchor, so the timer is correct after reopening Obsidian.
@@ -306,7 +306,7 @@ Two tabs. The UI is **styled entirely with Obsidian's CSS variables**, so it fol
 - A completed set shows **✓ Done · undo**; pressing undo clears `done`/`started`/`duration_seconds`. You cannot tick a set done here — completion only happens through Start → End.
 - Add new set to any exercise block (a new set copies the previous set's `reps`/`weight`). **Deleting a set asks for confirmation.**
 - Reorder exercise blocks and reorder sets within a block (simple up/down controls — no drag-and-drop dependency needed).
-- **No adding new exercises mid-workout.** The exercise list is fixed at workout creation time. If the exercise list needs changing, finish or abandon and create a new workout.
+- **No adding new exercises mid-workout.** The exercise list is fixed at workout creation time. If the exercise list needs changing, finish (or delete the active file) and create a new workout.
 
 ---
 
@@ -328,9 +328,7 @@ Two tabs. The UI is **styled entirely with Obsidian's CSS variables**, so it fol
 
 - Every change to the active workout autosaves (debounced ~300–500ms) via `app.vault.process()` — no explicit "save" button during the workout.
 - On plugin load, check for a workout with `status: in_progress` (tracked via a small plugin-settings pointer or by scanning `active/`, which should only ever contain 0 or 1 file). If found, the Active Workout view can be reopened directly via ribbon icon or command, landing back exactly where you left off, with the timer correctly recalculated from `current_phase_started`.
-- If the user tries to **start a new workout** while one is already `in_progress`, show a prompt: **"A workout is already in progress — resume it or abandon it?"**
-    - **Resume** → opens the existing active workout view.
-    - **Abandon** → sets `status: abandoned`, clears `current_phase_started`, and moves the file from `active/` to `workouts/abandoned/` (via `fileManager.renameFile()`). Abandoned workouts are preserved, not deleted — they keep whatever sets were completed, so a later AI coach can still see interrupted attempts. A new workout can then begin.
+- Only **one active workout** at a time. If the user tries to start a new workout while one is already `in_progress`, a prompt explains they must **finish the current one first** (or delete its file from `active/`) and offers to **Resume current**. There is no abandon action.
 
 ---
 
@@ -362,7 +360,7 @@ Per-exercise history across all workouts (e.g. "all Bench Press sets over the la
 5. **Active Workout view** — Tab 1 (stopwatch) and Tab 2 (all sets), timestamp-based timer, autosave on every mutation.
 6. **Finish flow** — diff against template, confirmation modal, file move to `completed/`.
 7. **History view** — list of completed workouts, read-only or editable detail view.
-8. **Settings** — configurable folder paths (base path + `exercises/`, `templates/`, `active/`, `completed/`, `abandoned/` sub-folder names).
+8. **Settings** — configurable folder paths (base path + `exercises/`, `templates/`, `active/`, `completed/` sub-folder names).
 9. *(Later)* Exercise progress view / DataviewJS examples, bodyweight tracking, AI-coach-facing export helpers.
 
 ---

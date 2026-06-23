@@ -90,24 +90,16 @@ export default class GymMDPlugin extends Plugin {
 	async startWorkout(entry: TemplateEntry): Promise<void> {
 		const active = await this.workouts.findActive();
 		if (active) {
-			const choice = await chooseAction(this.app, {
+			// Only one active workout at a time. Finish the current one (or delete
+			// its file in the active folder) before starting another.
+			await chooseAction(this.app, {
 				title: 'Workout in progress',
-				message: 'A workout is already in progress — resume it or abandon it?',
-				actions: [
-					{ id: 'resume', label: 'Resume', cta: true },
-					{ id: 'abandon', label: 'Abandon', danger: true },
-					{ id: 'cancel', label: 'Cancel' },
-				],
+				message:
+					'A workout is already in progress. Finish it first — or delete its file in the active folder — before starting a new one.',
+				actions: [{ id: 'resume', label: 'Resume current', cta: true }],
 			});
-			if (choice === 'resume') {
-				await this.reopenActiveWorkout();
-				return;
-			}
-			if (choice === 'abandon') {
-				await this.workouts.abandon(active.file, active.workout);
-			} else {
-				return;
-			}
+			await this.reopenActiveWorkout();
+			return;
 		}
 
 		await ensureFolders(this.app, resolvePaths(this.settings));

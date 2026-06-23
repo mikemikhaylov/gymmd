@@ -17,7 +17,7 @@ export interface ActiveWorkoutController {
 	mutate: (fn: (w: Workout) => void) => void;
 	/** Cancel any pending autosave and return the latest in-memory state. */
 	flushAndGet: () => Promise<Loaded | null>;
-	/** Forget the active workout locally (after finish/abandon). */
+	/** Forget the active workout locally (after finish). */
 	clear: () => void;
 }
 
