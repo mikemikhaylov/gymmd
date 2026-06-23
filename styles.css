@@ -163,6 +163,10 @@
 	border-color: #3a3f4b;
 }
 
+.gymmd-dark .gymmd-footer {
+	background: #16181d;
+}
+
 /* --- Inline exercise picker --- */
 
 .gymmd-picker {
