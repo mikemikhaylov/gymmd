@@ -1,4 +1,4 @@
-import { type App, Modal, Setting, SuggestModal } from 'obsidian';
+import { type App, Modal, Setting } from 'obsidian';
 
 /** Prompt for a single line of text. Resolves null if cancelled. */
 export function promptText(
@@ -105,47 +105,3 @@ export function chooseAction(
 	});
 }
 
-class ListPicker<T> extends SuggestModal<T> {
-	constructor(
-		app: App,
-		private items: T[],
-		private label: (item: T) => string,
-		private onPick: (item: T | null) => void,
-	) {
-		super(app);
-	}
-
-	getSuggestions(query: string): T[] {
-		const q = query.toLowerCase();
-		return this.items.filter((i) => this.label(i).toLowerCase().includes(q));
-	}
-
-	renderSuggestion(item: T, el: HTMLElement): void {
-		el.setText(this.label(item));
-	}
-
-	onChooseSuggestion(item: T): void {
-		this.picked = true;
-		this.onPick(item);
-	}
-
-	private picked = false;
-	onClose(): void {
-		super.onClose();
-		if (!this.picked) this.onPick(null);
-	}
-}
-
-/** Pick one item from a list via fuzzy suggest. Resolves null if dismissed. */
-export function chooseFromList<T>(
-	app: App,
-	items: T[],
-	label: (item: T) => string,
-	placeholder?: string,
-): Promise<T | null> {
-	return new Promise((resolve) => {
-		const picker = new ListPicker(app, items, label, resolve);
-		if (placeholder) picker.setPlaceholder(placeholder);
-		picker.open();
-	});
-}

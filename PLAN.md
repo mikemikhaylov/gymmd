@@ -313,6 +313,7 @@ Two tabs, **dark theme only** — forced via a scoped CSS class on the view cont
 - One big toggle button:
     - **Start Set** → timer resets & starts, fields become editable, button becomes **End Set**.
     - **End Set** → commits `reps`/`weight`/`duration_seconds` to that set, marks `done: true`, timer resets & restarts immediately, advances to next planned set, button reverts to **Start Set**.
+- **Discard Set** → shown only while a set is in progress (after **Start Set**). Cancels the current set and fully undoes the start: clears the set's `started`/`reps`/`weight`/`duration_seconds` back to their pre-start values, leaves `done: false`, and restores the timer to where it was before Start. Use it when a set was started by accident — afterwards the button is back to **Start Set** and you can start cleanly again. (For a set being re-done, Discard restores the previously completed values rather than wiping them.)
 - Manual prev/next navigation to jump between sets out of order if needed.
 
 ### Tab 2 — All Sets

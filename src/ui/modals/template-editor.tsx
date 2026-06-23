@@ -3,7 +3,7 @@ import { type ReactElement, useState } from 'react';
 import type { TFile } from 'obsidian';
 import type { Exercise, Template } from '../../types';
 import { usePlugin } from '../context';
-import { chooseFromList, promptText } from './prompts';
+import { promptText } from './prompts';
 
 interface Props {
 	file: TFile;
@@ -12,11 +12,73 @@ interface Props {
 	close: () => void;
 }
 
-const CREATE_SENTINEL = '__create_new__';
+/** Inline search-or-create picker rendered within the editor (no extra modal). */
+function ExercisePicker({
+	available,
+	query,
+	setQuery,
+	alreadyAdded,
+	onPick,
+	onCreate,
+	onCancel,
+}: {
+	available: Exercise[];
+	query: string;
+	setQuery: (q: string) => void;
+	alreadyAdded: string[];
+	onPick: (e: Exercise) => void;
+	onCreate: (name: string) => void;
+	onCancel: () => void;
+}): ReactElement {
+	const q = query.trim().toLowerCase();
+	const matches = available.filter((e) => e.name.toLowerCase().includes(q));
+	const exactExists = available.some((e) => e.name.toLowerCase() === q);
+
+	return (
+		<div className="gymmd-picker">
+			<input
+				type="text"
+				autoFocus
+				placeholder="Search, or type a new exercise name…"
+				value={query}
+				onChange={(e) => setQuery(e.target.value)}
+			/>
+			<div className="gymmd-picker-list">
+				{matches.map((e) => {
+					const added = alreadyAdded.includes(e.exercise_id);
+					return (
+						<button
+							key={e.exercise_id}
+							className="gymmd-picker-item"
+							disabled={added}
+							onClick={() => onPick(e)}
+						>
+							{e.name}
+							{added ? ' (added)' : ''}
+						</button>
+					);
+				})}
+				{query.trim() && !exactExists && (
+					<button className="gymmd-picker-item gymmd-picker-create" onClick={() => onCreate(query.trim())}>
+						➕ Create "{query.trim()}"
+					</button>
+				)}
+				{matches.length === 0 && !query.trim() && (
+					<p className="gymmd-empty">No exercises yet — type a name to create one.</p>
+				)}
+			</div>
+			<button onClick={onCancel}>Cancel</button>
+		</div>
+	);
+}
 
 export function TemplateEditor({ file, initial, onSaved, close }: Props): ReactElement {
 	const plugin = usePlugin();
 	const [template, setTemplate] = useState<Template>(() => structuredClone(initial));
+	// Inline exercise picker state (null = closed). Kept in-component so there's
+	// no second Obsidian modal stacked over this React modal.
+	const [available, setAvailable] = useState<Exercise[] | null>(null);
+	const [query, setQuery] = useState('');
 
 	const update = (fn: (t: Template) => void) =>
 		setTemplate((prev) => {
@@ -25,38 +87,19 @@ export function TemplateEditor({ file, initial, onSaved, close }: Props): ReactE
 			return next;
 		});
 
-	const onAddExercise = async () => {
-		const available = await plugin.exercises.list(false);
-		const options: Exercise[] = [
-			...available.map((e) => e.exercise),
-			{
-				exercise_id: CREATE_SENTINEL,
-				type: 'workout-exercise',
-				name: '➕ Create new exercise…',
-				archived: false,
-				created: '',
-				notes: '',
-			},
-		];
-		const picked = await chooseFromList(plugin.app, options, (e) => e.name, 'Add exercise');
-		if (!picked) return;
+	const openPicker = async () => {
+		const list = await plugin.exercises.list(false);
+		setQuery('');
+		setAvailable(list.map((e) => e.exercise));
+	};
 
-		let exercise = picked;
-		if (picked.exercise_id === CREATE_SENTINEL) {
-			const name = await promptText(plugin.app, {
-				title: 'New exercise',
-				placeholder: 'Exercise name',
-				cta: 'Create',
-			});
-			if (!name) return;
-			exercise = await plugin.exercises.create(name);
-		}
-
+	const addExerciseToTemplate = (exercise: Exercise) => {
+		setAvailable(null);
+		setQuery('');
 		if (template.exercises.some((x) => x.exercise_id === exercise.exercise_id)) {
 			new Notice(`${exercise.name} is already in this template`);
 			return;
 		}
-
 		update((t) => {
 			t.exercises.push({
 				exercise_id: exercise.exercise_id,
@@ -65,6 +108,11 @@ export function TemplateEditor({ file, initial, onSaved, close }: Props): ReactE
 				sets: [{ set: 1, reps: 10, weight: 20 }],
 			});
 		});
+	};
+
+	const createAndAdd = async (name: string) => {
+		const exercise = await plugin.exercises.create(name);
+		addExerciseToTemplate(exercise);
 	};
 
 	const moveExercise = (index: number, delta: number) =>
@@ -137,12 +185,24 @@ export function TemplateEditor({ file, initial, onSaved, close }: Props): ReactE
 						rename
 					</button>
 				</h3>
-				<button className="mod-cta" onClick={() => void onAddExercise()}>
+				<button className="mod-cta" onClick={() => void openPicker()}>
 					Add exercise
 				</button>
 			</div>
 
-			{template.exercises.length === 0 && (
+			{available !== null && (
+				<ExercisePicker
+					available={available}
+					query={query}
+					setQuery={setQuery}
+					alreadyAdded={template.exercises.map((e) => e.exercise_id)}
+					onPick={addExerciseToTemplate}
+					onCreate={(name) => void createAndAdd(name)}
+					onCancel={() => setAvailable(null)}
+				/>
+			)}
+
+			{template.exercises.length === 0 && available === null && (
 				<p className="gymmd-empty">No exercises. Add one to start building.</p>
 			)}
 

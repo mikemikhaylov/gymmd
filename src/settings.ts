@@ -37,6 +37,8 @@ export class GymMDSettingTab extends PluginSettingTab {
 			.setDesc('Vault folder that contains all workout data.')
 			.addText((text) =>
 				text
+					// Folder names are intentionally lowercase, not sentence-case prose.
+					// eslint-disable-next-line obsidianmd/ui/sentence-case
 					.setPlaceholder('workouts')
 					.setValue(this.plugin.settings.basePath)
 					.onChange(async (value) => {

@@ -1,6 +1,6 @@
 import { Notice } from 'obsidian';
 import { type ReactElement, useEffect, useMemo, useState } from 'react';
-import type { Workout } from '../../types';
+import type { Workout, WorkoutSet } from '../../types';
 import { VIEW_TYPE_ACTIVE_WORKOUT, VIEW_TYPE_TEMPLATES } from '../../utils/constants';
 import { nowISODateTime, parseISODateTime, formatStopwatch } from '../../utils/date';
 import { usePlugin } from '../context';
@@ -13,6 +13,13 @@ import { ReactItemView } from './react-view';
 interface Ref {
 	e: number;
 	s: number;
+}
+
+/** Captured at Start, so Discard can fully undo a (mis-)started set. */
+interface SetSnapshot {
+	ref: Ref;
+	set: WorkoutSet;
+	phase: string | null;
 }
 
 function weightLabel(w: number | null): string {
@@ -44,6 +51,8 @@ function StopwatchTab({
 	setCursor,
 	activeRef,
 	setActiveRef,
+	setSnapshot,
+	snapshot,
 }: {
 	ctrl: ActiveWorkoutController;
 	workout: Workout;
@@ -51,6 +60,8 @@ function StopwatchTab({
 	setCursor: (r: Ref) => void;
 	activeRef: Ref | null;
 	setActiveRef: (r: Ref | null) => void;
+	setSnapshot: (s: SetSnapshot | null) => void;
+	snapshot: SetSnapshot | null;
 }): ReactElement {
 	const running = workout.current_phase_started !== null;
 	const now = useNow(running);
@@ -65,6 +76,11 @@ function StopwatchTab({
 
 	const startSet = () => {
 		const ts = nowISODateTime();
+		setSnapshot({
+			ref: cursor,
+			set: structuredClone(set),
+			phase: workout.current_phase_started,
+		});
 		ctrl.mutate((w) => {
 			const t = w.exercises[cursor.e].sets[cursor.s];
 			t.started = ts;
@@ -74,6 +90,17 @@ function StopwatchTab({
 			if (!w.started) w.started = ts;
 		});
 		setActiveRef(cursor);
+	};
+
+	/** Undo a mis-started set, restoring its prior state and the timer anchor. */
+	const discardSet = () => {
+		if (!snapshot) return;
+		ctrl.mutate((w) => {
+			w.exercises[snapshot.ref.e].sets[snapshot.ref.s] = structuredClone(snapshot.set);
+			w.current_phase_started = snapshot.phase;
+		});
+		setActiveRef(null);
+		setSnapshot(null);
 	};
 
 	const endSet = () => {
@@ -96,6 +123,7 @@ function StopwatchTab({
 			w.current_phase_started = nowISODateTime();
 		});
 		setActiveRef(null);
+		setSnapshot(null);
 		setCursor(next);
 	};
 
@@ -152,6 +180,12 @@ function StopwatchTab({
 			<button className="gymmd-big-button" onClick={isActive ? endSet : startSet}>
 				{isActive ? 'End set' : set.done ? 'Redo set' : 'Start set'}
 			</button>
+
+			{isActive && (
+				<button className="gymmd-discard-button" onClick={discardSet}>
+					Discard set
+				</button>
+			)}
 
 			<div className="gymmd-nav">
 				<button onClick={() => goto(-1)} disabled={pos <= 0}>
@@ -307,6 +341,7 @@ function ActiveWorkout(): ReactElement {
 	const ctrl = useActiveWorkout(plugin);
 	const [tab, setTab] = useState<'stopwatch' | 'sets'>('stopwatch');
 	const [activeRef, setActiveRef] = useState<Ref | null>(null);
+	const [snapshot, setSnapshot] = useState<SetSnapshot | null>(null);
 	const [rawCursor, setCursor] = useState<Ref | null>(null);
 
 	const workout = ctrl.workout;
@@ -415,6 +450,8 @@ function ActiveWorkout(): ReactElement {
 					setCursor={setCursor}
 					activeRef={activeRef}
 					setActiveRef={setActiveRef}
+					snapshot={snapshot}
+					setSnapshot={setSnapshot}
 				/>
 			) : (
 				<AllSetsTab ctrl={ctrl} workout={workout} />
