@@ -1,6 +1,6 @@
 import type { Template, Workout } from '../types';
 import { todayISODate } from '../utils/date';
-import { recomputeTemplateSummary } from './summary';
+import { renumberTemplate } from './summary';
 
 /**
  * Diff a finished workout against the template it came from, considering only
@@ -115,6 +115,6 @@ export function applyCompletedToTemplate(w: Workout, tpl: Template): Template {
 
 	next.exercises = ordered;
 	next.updated = todayISODate();
-	recomputeTemplateSummary(next);
+	renumberTemplate(next);
 	return next;
 }

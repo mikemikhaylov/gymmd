@@ -1,4 +1,5 @@
 /** Obsidian view type identifiers (stable — do not rename once released). */
+export const VIEW_TYPE_HOME = 'gymmd-home';
 export const VIEW_TYPE_EXERCISES = 'gymmd-exercises';
 export const VIEW_TYPE_TEMPLATES = 'gymmd-templates';
 export const VIEW_TYPE_ACTIVE_WORKOUT = 'gymmd-active-workout';

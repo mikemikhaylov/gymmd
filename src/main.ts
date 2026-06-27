@@ -5,11 +5,13 @@ import { TemplateStore, type TemplateEntry } from './services/template-store';
 import { WorkoutStore } from './services/workout-store';
 import { resolvePaths, ensureFolders } from './services/paths';
 import {
+	VIEW_TYPE_HOME,
 	VIEW_TYPE_EXERCISES,
 	VIEW_TYPE_TEMPLATES,
 	VIEW_TYPE_ACTIVE_WORKOUT,
 	VIEW_TYPE_HISTORY,
 } from './utils/constants';
+import { HomeView } from './ui/views/home-view';
 import { ExerciseListView } from './ui/views/exercise-list-view';
 import { TemplateListView } from './ui/views/template-list-view';
 import { ActiveWorkoutView } from './ui/views/active-workout-view';
@@ -30,15 +32,23 @@ export default class GymMDPlugin extends Plugin {
 		this.templates = new TemplateStore(this.app, getSettings);
 		this.workouts = new WorkoutStore(this.app, getSettings);
 
+		this.registerView(VIEW_TYPE_HOME, (leaf) => new HomeView(leaf, this));
 		this.registerView(VIEW_TYPE_EXERCISES, (leaf) => new ExerciseListView(leaf, this));
 		this.registerView(VIEW_TYPE_TEMPLATES, (leaf) => new TemplateListView(leaf, this));
 		this.registerView(VIEW_TYPE_ACTIVE_WORKOUT, (leaf) => new ActiveWorkoutView(leaf, this));
 		this.registerView(VIEW_TYPE_HISTORY, (leaf) => new HistoryView(leaf, this));
 
-		this.addRibbonIcon('dumbbell', 'Open workout templates', () => {
-			void this.activateView(VIEW_TYPE_TEMPLATES);
+		// eslint-disable-next-line obsidianmd/ui/sentence-case -- "GymMD" is a brand name
+		this.addRibbonIcon('dumbbell', 'Open GymMD', () => {
+			void this.openHome();
 		});
 
+		this.addCommand({
+			id: 'open-home',
+			// eslint-disable-next-line obsidianmd/ui/sentence-case -- "GymMD" is a brand name
+			name: 'Open GymMD',
+			callback: () => void this.openHome(),
+		});
 		this.addCommand({
 			id: 'open-templates',
 			name: 'Open workout templates',
@@ -105,6 +115,12 @@ export default class GymMDPlugin extends Plugin {
 		await ensureFolders(this.app, resolvePaths(this.settings));
 		await this.workouts.createFromTemplate(entry.template);
 		await this.reopenActiveWorkout();
+	}
+
+	/** Open a fresh home view so its "active workout" check is up to date. */
+	private async openHome(): Promise<void> {
+		this.app.workspace.detachLeavesOfType(VIEW_TYPE_HOME);
+		await this.activateView(VIEW_TYPE_HOME);
 	}
 
 	/** Force a fresh Active Workout view so it reloads the current active file. */

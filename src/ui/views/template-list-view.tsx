@@ -75,14 +75,16 @@ function TemplateList(): ReactElement {
 				<p className="gymmd-empty">No templates yet. Create one to start working out.</p>
 			) : (
 				<ul className="gymmd-list">
-					{entries.map((entry) => (
+					{entries.map((entry) => {
+						const exerciseCount = entry.template.exercises.length;
+						const setCount = entry.template.exercises.reduce((n, ex) => n + ex.sets.length, 0);
+						return (
 						<li key={entry.template.template_id} className="gymmd-list-row">
 							<span>
 								{entry.template.name}
 								<span className="gymmd-muted">
 									{' '}
-									· {entry.template.exercise_count} exercises ·{' '}
-									{entry.template.total_planned_sets} sets
+									· {exerciseCount} exercises · {setCount} sets
 								</span>
 							</span>
 							<span className="gymmd-row-actions">
@@ -93,7 +95,8 @@ function TemplateList(): ReactElement {
 								<button onClick={() => void onDelete(entry)}>Delete</button>
 							</span>
 						</li>
-					))}
+						);
+					})}
 				</ul>
 			)}
 		</div>

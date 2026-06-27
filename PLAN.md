@@ -82,8 +82,6 @@ template_id: tpl-7c1d
 name: Push Day
 created: 2026-06-01
 updated: 2026-06-19
-exercise_count: 3
-total_planned_sets: 9
 exercises:
   - exercise_id: ex-3f9a2b
     name: Bench Press
@@ -277,6 +275,12 @@ Notes:
 
 ---
 
+## 5a. Navigation (home hub)
+
+The ribbon **dumbbell** icon (and the "Open GymMD" command) opens a small **home view**: a title plus large buttons to **Templates**, **Exercises**, and **History**. A **Resume active workout** button appears at the top only when a workout is in progress. Each destination is also directly available via its own command. This keeps the entry point simple — one icon, then choose where to go.
+
+---
+
 ## 6. Live "Active Workout" UI
 
 Two tabs. The UI is **styled entirely with Obsidian's CSS variables**, so it follows the user's active theme (light or dark) and looks native — no forced colors. Large tap targets for phone use in the gym. The header has a single **Finish** button, which asks for confirmation. There is no "abandon" — to discard a workout, finish it and delete the file, or delete the in-progress file from the `active/` folder directly. (Confirmations use the `mod-warning` button class — version-safe, no dependency on the 1.13 `setDestructive` API.)
@@ -327,7 +331,7 @@ Two tabs. The UI is **styled entirely with Obsidian's CSS variables**, so it fol
 
 ## 9. Querying / progress stats
 
-Workout frontmatter no longer stores denormalized summaries (§5), so plain Dataview (DQL) can't read pre-computed counts/volume. Templates still expose `exercise_count`/`total_planned_sets` if you want simple DQL over templates, and any per-workout or per-exercise stat can be computed from the structured `exercises[].sets` data via a short DataviewJS script.
+Neither workout nor template frontmatter stores denormalized summaries (§4–5), so plain Dataview (DQL) can't read pre-computed counts/volume. Any per-workout or per-exercise stat is computed from the structured `exercises[].sets` data — via a short DataviewJS script, or the in-plugin view below.
 
 The intended home for stats is an **in-plugin "Exercise Progress" view** (v2): scan `completed/`, filter each workout's `exercises[]` by `exercise_id`, and chart e.g. top-set weight or per-session volume over time. The schema already supports this with no migration — `exercise_id` is the consistent join key everywhere, and each completed set carries `reps`/`weight` plus the workout's `started`/`completed` timestamps.
 

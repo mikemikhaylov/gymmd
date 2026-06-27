@@ -6,7 +6,7 @@ import { todayISODate } from '../utils/date';
 import { resolvePaths, ensureFolders, uniquePath, sanitizeFileName } from './paths';
 import { templateFromFrontmatter } from './parse';
 import { serializeTemplate } from './serializer';
-import { recomputeTemplateSummary } from './summary';
+import { renumberTemplate } from './summary';
 import { filesIn, readTyped, writeFile } from './vault-io';
 import type { GymMDSettings } from '../settings';
 
@@ -53,8 +53,6 @@ export class TemplateStore {
 			name: name.trim(),
 			created: today,
 			updated: today,
-			exercise_count: 0,
-			total_planned_sets: 0,
 			exercises: [],
 		};
 		const path = uniquePath(this.app, paths.templates, template.name);
@@ -65,7 +63,7 @@ export class TemplateStore {
 	/** Persist a template, recomputing summary fields and `updated`. */
 	async save(file: TFile, template: Template, touchUpdated = true): Promise<void> {
 		if (touchUpdated) template.updated = todayISODate();
-		recomputeTemplateSummary(template);
+		renumberTemplate(template);
 		await writeFile(this.app, file, serializeTemplate(template));
 	}
 

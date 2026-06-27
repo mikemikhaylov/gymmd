@@ -37,7 +37,7 @@ src/
   types.ts             # Exercise, Template, Workout TypeScript types
   ui/
     context.ts         # React PluginContext + usePlugin()
-    views/             # ReactItemView subclasses (exercises, templates, active, history)
+    views/             # ReactItemView subclasses (home hub, exercises, templates, active, history)
     modals/            # React modal base, prompts, template editor, finish flow
     hooks/             # useActiveWorkout (autosave), useNow (ticking clock)
   services/            # Vault I/O, serializer/parser, stores, summary, diff

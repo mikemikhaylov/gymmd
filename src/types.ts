@@ -48,8 +48,6 @@ export interface Template {
 	name: string;
 	created: ISODate;
 	updated: ISODate;
-	exercise_count: number;
-	total_planned_sets: number;
 	exercises: TemplateExercise[];
 }
 

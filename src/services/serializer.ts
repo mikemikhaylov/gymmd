@@ -69,8 +69,6 @@ export function serializeTemplate(tpl: Template): string {
 		line(0, 'name', tpl.name),
 		line(0, 'created', tpl.created),
 		line(0, 'updated', tpl.updated),
-		line(0, 'exercise_count', tpl.exercise_count),
-		line(0, 'total_planned_sets', tpl.total_planned_sets),
 		'exercises:',
 	];
 	for (const ex of tpl.exercises) {

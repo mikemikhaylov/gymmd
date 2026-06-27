@@ -105,11 +105,6 @@ export function templateFromFrontmatter(fm: Rec): Template | null {
 		name: asString(fm.name),
 		created: asDateString(fm.created),
 		updated: asDateString(fm.updated),
-		exercise_count: asNumber(fm.exercise_count, exercises.length),
-		total_planned_sets: asNumber(
-			fm.total_planned_sets,
-			exercises.reduce((n, e) => n + e.sets.length, 0),
-		),
 		exercises,
 	};
 }
