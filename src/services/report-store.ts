@@ -13,7 +13,7 @@ export class ReportStore {
 	async write(markdown: string): Promise<TFile> {
 		const paths = resolvePaths(this.getSettings());
 		await ensureFolders(this.app, paths);
-		const path = uniquePath(this.app, paths.reports, `Report ${todayISODate()}`);
+		const path = uniquePath(this.app, paths.reports, `${todayISODate()} Report`);
 		return this.app.vault.create(path, markdown);
 	}
 }

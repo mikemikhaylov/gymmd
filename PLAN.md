@@ -41,7 +41,7 @@ VaultRoot/
       2026-06-18 Push Day.md
       2026-06-15 Leg Day.md
     reports/
-      Report 2026-06-27.md            ← generated progress reports
+      2026-06-27 Report.md            ← generated progress reports
 ```
 
 - Folder names default to lowercase (`workouts/exercises/…`); all configurable in settings. File names keep their natural casing (`Push Day.md`).
@@ -341,7 +341,7 @@ Two tabs. The UI is **styled entirely with Obsidian's CSS variables**, so it fol
 
 The **Reports** screen generates a markdown progress report into `reports/` — designed to be handed to a human coach for progressive-overload advice. It distills what's hard to see across many workout files into a few scannable tables.
 
-**Options** (sensible defaults): time range (default **all time**; presets 30/90/365 days) and which exercises to include (default **all**, with per-exercise checkboxes). Press **Generate** → a `Report YYYY-MM-DD.md` file is written and opened.
+**Options** (sensible defaults): time range (default **all time**; presets 30/90/365 days) and which exercises to include (default **all**, with per-exercise checkboxes). Press **Generate** → a `YYYY-MM-DD Report.md` file is written and opened.
 
 **Contents:**
 - **Summary** — workout count, frequency (≈/week), exercises tracked, total volume.
