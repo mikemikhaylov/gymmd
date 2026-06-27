@@ -282,8 +282,31 @@
 	background: var(--interactive-accent-hover);
 }
 
+/* Active view fills the pane; only the tab content scrolls, so the
+   Start/End/Finish button can be pinned to the bottom of the screen. */
+.gymmd-active {
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	padding-bottom: 0;
+}
+
+.gymmd-tabcontent {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow-y: auto;
+	display: flex;
+	flex-direction: column;
+}
+
 .gymmd-stopwatch {
+	flex: 1 1 auto;
+	display: flex;
+	flex-direction: column;
 	text-align: center;
+}
+
+.gymmd-allsets {
 	padding-bottom: var(--size-4-4);
 }
 
@@ -355,9 +378,9 @@
 }
 
 .gymmd-stopwatch-footer {
-	position: sticky;
-	bottom: 0;
-	padding: var(--size-4-3) 0 var(--size-4-1);
-	margin-top: var(--size-4-4);
+	/* Pinned to the bottom of the stopwatch column via flex. */
+	margin-top: auto;
 	background: var(--background-primary);
+	/* Extra bottom padding respects the iOS home indicator / safe area. */
+	padding: var(--size-4-3) 0 calc(var(--size-4-3) + env(safe-area-inset-bottom, 0px));
 }

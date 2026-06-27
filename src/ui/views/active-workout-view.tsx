@@ -369,11 +369,13 @@ export function ActiveWorkout(): ReactElement {
 				</button>
 			</div>
 
-			{tab === 'stopwatch' ? (
-				<StopwatchTab workout={workout} actions={actions} />
-			) : (
-				<AllSetsTab workout={workout} actions={actions} />
-			)}
+			<div className="gymmd-tabcontent">
+				{tab === 'stopwatch' ? (
+					<StopwatchTab workout={workout} actions={actions} />
+				) : (
+					<AllSetsTab workout={workout} actions={actions} />
+				)}
+			</div>
 		</div>
 	);
 }
