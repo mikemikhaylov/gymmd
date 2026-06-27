@@ -8,6 +8,7 @@ export interface GymMDSettings {
 	templatesFolder: string;
 	activeFolder: string;
 	completedFolder: string;
+	reportsFolder: string;
 }
 
 export const DEFAULT_SETTINGS: GymMDSettings = {
@@ -16,6 +17,7 @@ export const DEFAULT_SETTINGS: GymMDSettings = {
 	templatesFolder: 'templates',
 	activeFolder: 'active',
 	completedFolder: 'completed',
+	reportsFolder: 'reports',
 };
 
 export class GymMDSettingTab extends PluginSettingTab {
@@ -50,6 +52,7 @@ export class GymMDSettingTab extends PluginSettingTab {
 			['templatesFolder', 'Templates sub-folder', 'templates'],
 			['activeFolder', 'Active sub-folder', 'active'],
 			['completedFolder', 'Completed sub-folder', 'completed'],
+			['reportsFolder', 'Reports sub-folder', 'reports'],
 		];
 
 		for (const [key, name, fallback] of subFolders) {

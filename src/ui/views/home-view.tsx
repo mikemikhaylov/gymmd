@@ -33,6 +33,9 @@ export function Home(): ReactElement {
 				<button className="gymmd-home-button" onClick={() => nav.navigate('history')}>
 					History
 				</button>
+				<button className="gymmd-home-button" onClick={() => nav.navigate('reports')}>
+					Reports
+				</button>
 			</div>
 		</div>
 	);

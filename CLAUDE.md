@@ -39,12 +39,12 @@ src/
     context.ts         # React PluginContext + usePlugin()
     navigation.ts      # Route type + NavContext + useNav() (in-view router)
     views/             # app-view.tsx = the single ItemView + <App> router;
-                       #   home/exercise-list/template-list/history/active-workout
-                       #   are plain React screen components rendered by it
+                       #   home/exercise-list/template-list/history/active-workout/
+                       #   reports are plain React screen components rendered by it
     components/        # NumberField (validated reps/weight input)
     modals/            # React modal base, prompts, template editor, finish flow
     hooks/             # useActiveWorkout (autosave), useNow (ticking clock)
-  services/            # Vault I/O, serializer/parser, stores, summary, diff
+  services/            # Vault I/O, serializer/parser, stores, summary, diff, report
   utils/               # ID generation, date helpers, constants
 manifest.json          # Plugin metadata — never change `id` after release
 versions.json          # Maps plugin version → minimum Obsidian app version

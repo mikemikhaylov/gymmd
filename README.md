@@ -7,6 +7,7 @@ for the full design and [`CLAUDE.md`](CLAUDE.md) for the architecture.
 
 - **Exercises**, **Templates**, and **Workouts** are separate, stably-linked files.
 - Live "Active Workout" view with a stopwatch and an all-sets editor, styled to match your Obsidian theme.
+- **Progress reports**: generate a coach-friendly markdown report (per-exercise trends, PRs, stalling watchlist) over any date range / exercise selection.
 - A workout in progress survives closing/reopening Obsidian.
 - Works on desktop **and mobile** (`isDesktopOnly: false`).
 

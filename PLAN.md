@@ -40,6 +40,8 @@ VaultRoot/
     completed/
       2026-06-18 Push Day.md
       2026-06-15 Leg Day.md
+    reports/
+      Report 2026-06-27.md            ← generated progress reports
 ```
 
 - Folder names default to lowercase (`workouts/exercises/…`); all configurable in settings. File names keep their natural casing (`Push Day.md`).
@@ -277,13 +279,13 @@ Notes:
 
 ## 5a. Navigation (single-view SPA)
 
-All GymMD screens live inside **one Obsidian view** with internal routing (so phone use feels like a native app, not a pile of tabs). The ribbon **dumbbell** icon / **Open GymMD** command opens it at a **Home** hub: a title plus large buttons to **Templates**, **Exercises**, and **History**, with a **Resume active workout** button at the top only while a workout is in progress.
+All GymMD screens live inside **one Obsidian view** with internal routing (so phone use feels like a native app, not a pile of tabs). The ribbon **dumbbell** icon / **Open GymMD** command opens it at a **Home** hub: a title plus large buttons to **Templates**, **Exercises**, **History**, and **Reports**, with a **Resume active workout** button at the top only while a workout is in progress.
 
 - Selecting a destination **navigates within the same view**; a **Back** button in a top bar returns to the previous screen (route stack; Back from a top-level screen returns Home).
 - Starting a workout from a template navigates to the **Active Workout** screen; **finishing returns Home**.
 - Completed workout `.md` files still open as **normal Obsidian notes** (from History) — only the plugin's own screens are routed in the SPA.
 
-Implementation: a single `GymMDView` renders an `<App>` that holds a `Route` stack and provides a `NavContext` (`navigate`/`back`/`home`); each screen is a plain React component (`Home`, `TemplateList`, `ExerciseList`, `History`, `ActiveWorkout`).
+Implementation: a single `GymMDView` renders an `<App>` that holds a `Route` stack and provides a `NavContext` (`navigate`/`back`/`home`); each screen is a plain React component (`Home`, `TemplateList`, `ExerciseList`, `History`, `ActiveWorkout`, `Reports`).
 
 ---
 
@@ -335,11 +337,19 @@ Two tabs. The UI is **styled entirely with Obsidian's CSS variables**, so it fol
 
 ---
 
-## 9. Querying / progress stats
+## 9. Reports (progress for a coach)
 
-Neither workout nor template frontmatter stores denormalized summaries (§4–5), so plain Dataview (DQL) can't read pre-computed counts/volume. Any per-workout or per-exercise stat is computed from the structured `exercises[].sets` data — via a short DataviewJS script, or the in-plugin view below.
+The **Reports** screen generates a markdown progress report into `reports/` — designed to be handed to a human coach for progressive-overload advice. It distills what's hard to see across many workout files into a few scannable tables.
 
-The intended home for stats is an **in-plugin "Exercise Progress" view** (v2): scan `completed/`, filter each workout's `exercises[]` by `exercise_id`, and chart e.g. top-set weight or per-session volume over time. The schema already supports this with no migration — `exercise_id` is the consistent join key everywhere, and each completed set carries `reps`/`weight` plus the workout's `started`/`completed` timestamps.
+**Options** (sensible defaults): time range (default **all time**; presets 30/90/365 days) and which exercises to include (default **all**, with per-exercise checkboxes). Press **Generate** → a `Report YYYY-MM-DD.md` file is written and opened.
+
+**Contents:**
+- **Summary** — workout count, frequency (≈/week), exercises tracked, total volume.
+- **Highlights** — top improvers (by % gain) and a ⚠️ "stalling" watchlist (≥3 sessions, no gain).
+- **Overview table** — every exercise: sessions, best, first → latest, and trend (Δ + % + 📈/➡️/📉).
+- **Per-exercise detail** — frequency, best set + estimated 1RM (Epley), trend, and a compact last-10-sessions table (top set, e1RM, volume — or max/total reps for bodyweight lifts).
+
+It's pure data (no advice text) so the coach interprets it. Generation is a pure function (`services/report.ts`) over `completed/` workouts, joined by `exercise_id`; no stored summaries are needed.
 
 ---
 

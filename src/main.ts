@@ -3,6 +3,7 @@ import { DEFAULT_SETTINGS, type GymMDSettings, GymMDSettingTab } from './setting
 import { ExerciseStore } from './services/exercise-store';
 import { TemplateStore, type TemplateEntry } from './services/template-store';
 import { WorkoutStore } from './services/workout-store';
+import { ReportStore } from './services/report-store';
 import { resolvePaths, ensureFolders } from './services/paths';
 import { VIEW_TYPE_APP } from './utils/constants';
 import { GymMDView } from './ui/views/app-view';
@@ -13,6 +14,7 @@ export default class GymMDPlugin extends Plugin {
 	exercises!: ExerciseStore;
 	templates!: TemplateStore;
 	workouts!: WorkoutStore;
+	reports!: ReportStore;
 
 	async onload(): Promise<void> {
 		await this.loadSettings();
@@ -21,6 +23,7 @@ export default class GymMDPlugin extends Plugin {
 		this.exercises = new ExerciseStore(this.app, getSettings);
 		this.templates = new TemplateStore(this.app, getSettings);
 		this.workouts = new WorkoutStore(this.app, getSettings);
+		this.reports = new ReportStore(this.app, getSettings);
 
 		this.registerView(VIEW_TYPE_APP, (leaf) => new GymMDView(leaf, this));
 

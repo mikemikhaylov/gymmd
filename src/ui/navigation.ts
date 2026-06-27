@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react';
 
-export type Route = 'home' | 'templates' | 'exercises' | 'history' | 'active';
+export type Route = 'home' | 'templates' | 'exercises' | 'history' | 'active' | 'reports';
 
 export interface NavApi {
 	route: Route;

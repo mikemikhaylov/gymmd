@@ -7,6 +7,7 @@ import { ExerciseList } from './exercise-list-view';
 import { TemplateList } from './template-list-view';
 import { History } from './history-view';
 import { ActiveWorkout } from './active-workout-view';
+import { Reports } from './reports-view';
 
 const TITLES: Record<Route, string> = {
 	home: 'GymMD',
@@ -14,6 +15,7 @@ const TITLES: Record<Route, string> = {
 	exercises: 'Exercises',
 	history: 'History',
 	active: 'Active workout',
+	reports: 'Reports',
 };
 
 function Screen({ route }: { route: Route }): ReactElement {
@@ -26,6 +28,8 @@ function Screen({ route }: { route: Route }): ReactElement {
 			return <History />;
 		case 'active':
 			return <ActiveWorkout />;
+		case 'reports':
+			return <Reports />;
 		case 'home':
 		default:
 			return <Home />;
