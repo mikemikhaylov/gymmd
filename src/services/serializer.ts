@@ -110,9 +110,12 @@ export function serializeWorkout(w: Workout, title: string): string {
 		line(0, 'status', w.status),
 		line(0, 'started', w.started),
 		line(0, 'completed', w.completed),
-		line(0, 'current_phase_started', w.current_phase_started),
-		'exercises:',
 	];
+	// Stopwatch anchor — only meaningful while in progress; omit once cleared.
+	if (w.current_phase_started !== null) {
+		fm.push(line(0, 'current_phase_started', w.current_phase_started));
+	}
+	fm.push('exercises:');
 	for (const ex of w.exercises) {
 		fm.push(`  - ${line(0, 'uid', ex.uid).trimStart()}`);
 		fm.push(line(2, 'exercise_id', ex.exercise_id));
