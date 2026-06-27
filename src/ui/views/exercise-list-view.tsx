@@ -1,11 +1,9 @@
 import { type ReactElement, useCallback, useEffect, useState } from 'react';
-import { VIEW_TYPE_EXERCISES } from '../../utils/constants';
 import type { ExerciseEntry } from '../../services/exercise-store';
 import { usePlugin } from '../context';
 import { promptText, confirm } from '../modals/prompts';
-import { ReactItemView } from './react-view';
 
-function ExerciseList(): ReactElement {
+export function ExerciseList(): ReactElement {
 	const plugin = usePlugin();
 	const [entries, setEntries] = useState<ExerciseEntry[]>([]);
 	const [showArchived, setShowArchived] = useState(false);
@@ -98,22 +96,4 @@ function ExerciseList(): ReactElement {
 			)}
 		</div>
 	);
-}
-
-export class ExerciseListView extends ReactItemView {
-	getViewType(): string {
-		return VIEW_TYPE_EXERCISES;
-	}
-
-	getDisplayText(): string {
-		return 'Exercises';
-	}
-
-	getIcon(): string {
-		return 'dumbbell';
-	}
-
-	protected renderContent(): ReactElement {
-		return <ExerciseList />;
-	}
 }

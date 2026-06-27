@@ -1,9 +1,7 @@
 import { type ReactElement, useCallback, useEffect, useState } from 'react';
-import { VIEW_TYPE_HISTORY } from '../../utils/constants';
 import type { WorkoutEntry } from '../../services/workout-store';
 import type { Workout } from '../../types';
 import { usePlugin } from '../context';
-import { ReactItemView } from './react-view';
 
 /** Derive display stats from a workout (nothing summary-like is stored anymore). */
 function summarize(w: Workout): { sets: number; volume: number; minutes: number | null } {
@@ -26,7 +24,7 @@ function summarize(w: Workout): { sets: number; volume: number; minutes: number 
 	return { sets, volume: Math.round(volume * 100) / 100, minutes };
 }
 
-function History(): ReactElement {
+export function History(): ReactElement {
 	const plugin = usePlugin();
 	const [entries, setEntries] = useState<WorkoutEntry[]>([]);
 
@@ -75,22 +73,4 @@ function History(): ReactElement {
 			)}
 		</div>
 	);
-}
-
-export class HistoryView extends ReactItemView {
-	getViewType(): string {
-		return VIEW_TYPE_HISTORY;
-	}
-
-	getDisplayText(): string {
-		return 'Workout history';
-	}
-
-	getIcon(): string {
-		return 'history';
-	}
-
-	protected renderContent(): ReactElement {
-		return <History />;
-	}
 }

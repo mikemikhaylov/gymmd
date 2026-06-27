@@ -275,9 +275,15 @@ Notes:
 
 ---
 
-## 5a. Navigation (home hub)
+## 5a. Navigation (single-view SPA)
 
-The ribbon **dumbbell** icon (and the "Open GymMD" command) opens a small **home view**: a title plus large buttons to **Templates**, **Exercises**, and **History**. A **Resume active workout** button appears at the top only when a workout is in progress. Each destination is also directly available via its own command. This keeps the entry point simple — one icon, then choose where to go.
+All GymMD screens live inside **one Obsidian view** with internal routing (so phone use feels like a native app, not a pile of tabs). The ribbon **dumbbell** icon / **Open GymMD** command opens it at a **Home** hub: a title plus large buttons to **Templates**, **Exercises**, and **History**, with a **Resume active workout** button at the top only while a workout is in progress.
+
+- Selecting a destination **navigates within the same view**; a **Back** button in a top bar returns to the previous screen (route stack; Back from a top-level screen returns Home).
+- Starting a workout from a template navigates to the **Active Workout** screen; **finishing returns Home**.
+- Completed workout `.md` files still open as **normal Obsidian notes** (from History) — only the plugin's own screens are routed in the SPA.
+
+Implementation: a single `GymMDView` renders an `<App>` that holds a `Route` stack and provides a `NavContext` (`navigate`/`back`/`home`); each screen is a plain React component (`Home`, `TemplateList`, `ExerciseList`, `History`, `ActiveWorkout`).
 
 ---
 

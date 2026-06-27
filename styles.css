@@ -4,12 +4,40 @@
  * active theme (light or dark) and looks native. No hardcoded colors.
  */
 
+/* --- App shell (single-view router) --- */
+
+.gymmd-app {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+}
+
+.gymmd-navbar {
+	flex: 0 0 auto;
+	display: flex;
+	align-items: center;
+	gap: var(--size-4-2);
+	padding: var(--size-4-2) var(--size-4-3);
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.gymmd-navbar-title {
+	font-weight: var(--font-semibold);
+}
+
 /* --- Shared layout --- */
 
 .gymmd-view {
 	padding: var(--size-4-3) var(--size-4-4);
 	height: 100%;
 	overflow-y: auto;
+}
+
+/* When inside the app shell, the view fills remaining space and scrolls. */
+.gymmd-app .gymmd-view {
+	height: auto;
+	flex: 1 1 auto;
+	min-height: 0;
 }
 
 .gymmd-header {

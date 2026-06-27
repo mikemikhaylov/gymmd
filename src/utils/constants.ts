@@ -1,9 +1,5 @@
-/** Obsidian view type identifiers (stable — do not rename once released). */
-export const VIEW_TYPE_HOME = 'gymmd-home';
-export const VIEW_TYPE_EXERCISES = 'gymmd-exercises';
-export const VIEW_TYPE_TEMPLATES = 'gymmd-templates';
-export const VIEW_TYPE_ACTIVE_WORKOUT = 'gymmd-active-workout';
-export const VIEW_TYPE_HISTORY = 'gymmd-history';
+/** Single Obsidian view; all screens are routed inside it (stable id). */
+export const VIEW_TYPE_APP = 'gymmd-app';
 
 /** Frontmatter `type` discriminator values. */
 export const TYPE_EXERCISE = 'workout-exercise';

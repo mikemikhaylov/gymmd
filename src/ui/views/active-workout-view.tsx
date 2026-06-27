@@ -1,15 +1,14 @@
 import { Notice } from 'obsidian';
 import { type ReactElement, useState } from 'react';
 import type { Workout } from '../../types';
-import { VIEW_TYPE_ACTIVE_WORKOUT, VIEW_TYPE_TEMPLATES } from '../../utils/constants';
 import { nowISODateTime, parseISODateTime, formatStopwatch } from '../../utils/date';
 import { usePlugin } from '../context';
+import { useNav } from '../navigation';
 import { useActiveWorkout, type ActiveWorkoutController } from '../hooks/use-active-workout';
 import { useNow } from '../hooks/use-now';
 import { confirm } from '../modals/prompts';
 import { runFinishFlow } from '../modals/finish-flow';
 import { NumberField } from '../components/number-field';
-import { ReactItemView } from './react-view';
 
 interface Ref {
 	e: number;
@@ -273,8 +272,9 @@ function AllSetsTab({
 
 // --- Root -----------------------------------------------------------------
 
-function ActiveWorkout(): ReactElement {
+export function ActiveWorkout(): ReactElement {
 	const plugin = usePlugin();
+	const nav = useNav();
 	const ctrl = useActiveWorkout(plugin);
 	const [tab, setTab] = useState<'stopwatch' | 'sets'>('stopwatch');
 	const [activeRef, setActiveRef] = useState<Ref | null>(null);
@@ -294,7 +294,7 @@ function ActiveWorkout(): ReactElement {
 			<div className="gymmd-view">
 				<h2>No active workout</h2>
 				<p className="gymmd-empty">Start one from a template to begin logging.</p>
-				<button className="mod-cta" onClick={() => void plugin.activateView(VIEW_TYPE_TEMPLATES)}>
+				<button className="mod-cta" onClick={() => nav.navigate('templates')}>
 					Choose a template
 				</button>
 			</div>
@@ -339,6 +339,7 @@ function ActiveWorkout(): ReactElement {
 		if (moved) {
 			ctrl.clear();
 			new Notice('Workout completed');
+			nav.home();
 		}
 	};
 
@@ -375,22 +376,4 @@ function ActiveWorkout(): ReactElement {
 			)}
 		</div>
 	);
-}
-
-export class ActiveWorkoutView extends ReactItemView {
-	getViewType(): string {
-		return VIEW_TYPE_ACTIVE_WORKOUT;
-	}
-
-	getDisplayText(): string {
-		return 'Active workout';
-	}
-
-	getIcon(): string {
-		return 'timer';
-	}
-
-	protected renderContent(): ReactElement {
-		return <ActiveWorkout />;
-	}
 }

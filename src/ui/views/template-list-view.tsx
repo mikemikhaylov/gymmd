@@ -1,14 +1,14 @@
 import { type ReactElement, useCallback, useEffect, useState } from 'react';
-import { VIEW_TYPE_TEMPLATES } from '../../utils/constants';
 import type { TemplateEntry } from '../../services/template-store';
 import { usePlugin } from '../context';
+import { useNav } from '../navigation';
 import { promptText, confirm } from '../modals/prompts';
 import { openReactModal } from '../modals/react-modal';
 import { TemplateEditor } from '../modals/template-editor';
-import { ReactItemView } from './react-view';
 
-function TemplateList(): ReactElement {
+export function TemplateList(): ReactElement {
 	const plugin = usePlugin();
+	const nav = useNav();
 	const [entries, setEntries] = useState<TemplateEntry[]>([]);
 
 	const refresh = useCallback(async () => {
@@ -60,6 +60,7 @@ function TemplateList(): ReactElement {
 
 	const onStart = async (entry: TemplateEntry) => {
 		await plugin.startWorkout(entry);
+		nav.navigate('active');
 	};
 
 	return (
@@ -101,22 +102,4 @@ function TemplateList(): ReactElement {
 			)}
 		</div>
 	);
-}
-
-export class TemplateListView extends ReactItemView {
-	getViewType(): string {
-		return VIEW_TYPE_TEMPLATES;
-	}
-
-	getDisplayText(): string {
-		return 'Workout templates';
-	}
-
-	getIcon(): string {
-		return 'clipboard-list';
-	}
-
-	protected renderContent(): ReactElement {
-		return <TemplateList />;
-	}
 }
