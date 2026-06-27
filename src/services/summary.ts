@@ -12,26 +12,12 @@ export function recomputeTemplateSummary(tpl: Template): void {
 	tpl.total_planned_sets = tpl.exercises.reduce((n, ex) => n + ex.sets.length, 0);
 }
 
-/** Recompute workout totals + normalize order/set numbering. Volume counts only completed sets. */
-export function recomputeWorkoutSummary(w: Workout): void {
-	let volume = 0;
-	let completed = 0;
-	let planned = 0;
-
+/** Normalize a workout's exercise `order` and per-exercise `set` numbering. */
+export function renumberWorkout(w: Workout): void {
 	w.exercises.forEach((ex, i) => {
 		ex.order = i + 1;
 		ex.sets.forEach((s, j) => {
 			s.set = j + 1;
-			planned += 1;
-			if (s.done) {
-				completed += 1;
-				volume += (s.reps ?? 0) * (s.weight ?? 0);
-			}
 		});
 	});
-
-	w.exercise_count = w.exercises.length;
-	w.total_sets_planned = planned;
-	w.total_sets_completed = completed;
-	w.total_volume_kg = Math.round(volume * 100) / 100;
 }

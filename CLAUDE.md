@@ -2,7 +2,7 @@
 
 ## What this is
 
-An Obsidian community plugin that logs gym workouts as plain markdown files. All data lives in human-editable frontmatter so Dataview/Bases can query it without parsing markdown tables. The full design spec is in `PLAN.md`.
+An Obsidian community plugin that logs gym workouts as plain markdown files. All data lives in human-editable frontmatter (source-of-truth only — no denormalized summaries); derived numbers are computed on demand. The full design spec is in `PLAN.md`.
 
 ## Key stack decisions
 

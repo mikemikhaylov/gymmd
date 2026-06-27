@@ -14,6 +14,8 @@ interface Loaded {
 export interface ActiveWorkoutController {
 	phase: Phase;
 	workout: Workout | null;
+	/** Display title for the workout (its file name). */
+	title: string | null;
 	mutate: (fn: (w: Workout) => void) => void;
 	/** Cancel any pending autosave and return the latest in-memory state. */
 	flushAndGet: () => Promise<Loaded | null>;
@@ -99,5 +101,12 @@ export function useActiveWorkout(plugin: GymMDPlugin): ActiveWorkoutController {
 		[],
 	);
 
-	return { phase, workout: state?.workout ?? null, mutate, flushAndGet, clear };
+	return {
+		phase,
+		workout: state?.workout ?? null,
+		title: state?.file.basename ?? null,
+		mutate,
+		flushAndGet,
+		clear,
+	};
 }

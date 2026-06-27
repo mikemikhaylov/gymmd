@@ -80,17 +80,10 @@ export interface Workout {
 	type: 'workout';
 	workout_id: string;
 	template_id: string;
-	template_name: string;
 	status: WorkoutStatus;
-	date: ISODate;
 	started: ISODateTime | null;
 	completed: ISODateTime | null;
-	duration_minutes: number | null;
 	/** Stopwatch anchor; null until the first Start Set press, cleared on finish. */
 	current_phase_started: ISODateTime | null;
-	exercise_count: number;
-	total_sets_planned: number;
-	total_sets_completed: number;
-	total_volume_kg: number;
 	exercises: WorkoutExercise[];
 }

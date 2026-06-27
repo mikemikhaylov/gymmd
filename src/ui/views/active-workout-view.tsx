@@ -347,7 +347,7 @@ function ActiveWorkout(): ReactElement {
 	return (
 		<div className="gymmd-view gymmd-active">
 			<div className="gymmd-header">
-				<h2>{workout.template_name}</h2>
+				<h2>{ctrl.title}</h2>
 				<button className="mod-cta" onClick={() => void onFinish()}>
 					Finish
 				</button>

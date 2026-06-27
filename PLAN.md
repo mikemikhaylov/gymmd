@@ -4,7 +4,7 @@
 
 A markdown-native Obsidian plugin for logging gym workouts, where:
 - All data is stored as plain, human-editable markdown files in the vault.
-- Frontmatter carries full structured data (not just summaries) so Dataview/Bases can query it directly.
+- Frontmatter carries the full structured per-set data (and no denormalized summaries) so files stay clean and an AI coach / scripts can read it directly. Derived numbers (counts, volume, duration) are computed on demand, not stored.
 - Exercises, Templates, and Workouts are three separate, stably-linked entities.
 - A workout in progress survives closing/reopening Obsidian.
 - Output is structured enough to be consumed later by an AI coach reading the vault.
@@ -168,17 +168,10 @@ Lives in `workouts/active/` while `status: in_progress`, moved verbatim to `work
 type: workout
 workout_id: wkt-a91f3
 template_id: tpl-7c1d
-template_name: Push Day
 status: in_progress
-date: 2026-06-20
 started: "2026-06-20T18:02:11"
 completed:
-duration_minutes:
 current_phase_started: "2026-06-20T18:14:55"
-exercise_count: 3
-total_sets_planned: 9
-total_sets_completed: 4
-total_volume_kg: 1875
 exercises:
   - exercise_id: ex-3f9a2b
     name: Bench Press
@@ -248,7 +241,7 @@ exercises:
         duration_seconds:
 ---
 
-# Push Day — 2026-06-20
+# 2026-06-20 Push Day
 
 ## Bench Press
 | Set | Reps | Weight (kg) | Done | Started | Duration (s) |
@@ -278,9 +271,9 @@ Notes:
 - **No separate planned/actual fields.** Each set has a single `reps`/`weight`, copied from the template when the workout is created. They are visible and editable on **every** set from the start (so you can see and adjust the prescription before you begin), and `done` is a plain boolean. There is no `planned_reps`/`planned_weight`. (The parser still reads legacy `planned_*` from any pre-existing files.)
 - **`done` is set only by the Start → End stopwatch flow** (End stamps `duration_seconds` and sets `done: true`). In the All-Sets tab you can **undo** a set (clears `done`, `started`, `duration_seconds`) but cannot tick it done directly — completion always goes through the timer.
 - **Adding sets mid-workout**: plugin appends a new entry to both the `sets` array and the table row for that exercise; a new ad-hoc set copies `reps`/`weight` from the previous set. No new exercises can be added mid-workout — only new sets to exercises already in the workout.
-- **Incomplete sets on finish**: if the workout ends while some sets are `done: false`, those sets are kept in the completed file as-is (with blank actuals). This records the intended plan faithfully — a cut-short workout is not the same as a different workout. The template is NOT pruned to match what was actually done.
-- Frontmatter summary fields (`total_volume_kg`, `total_sets_completed`, etc.) are recomputed by the plugin on every change.
-- **Timestamp format**: all datetime values (`started`, `current_phase_started`, `completed`, per-set `started`) are stored as **quoted ISO-8601 strings** (e.g. `"2026-06-20T18:02:11"`), never as bare YAML timestamps — this keeps `metadataCache` parsing predictable and avoids timezone auto-coercion. `date` is a plain `YYYY-MM-DD` date.
+- **Incomplete sets on finish**: if the workout ends while some sets are `done: false`, those sets are kept in the completed file as-is. This records the intended plan faithfully — a cut-short workout is not the same as a different workout. The template is NOT pruned to match what was actually done.
+- **No denormalized/derived fields.** The workout frontmatter holds only source-of-truth: `workout_id`, `template_id`, `status`, `started`, `completed`, `current_phase_started`, and `exercises[]`. Everything else (date, duration, set counts, total volume, the workout's display name) is **derived on demand** — the date/name live in the filename (`YYYY-MM-DD <Template Name>.md`), and counts/volume/duration are computed from `exercises[]` + `started`/`completed` wherever needed (e.g. the History view). This keeps files clean and avoids stale summaries; an AI coach still has everything it needs (the `template_id` link + full per-set data).
+- **Timestamp format**: all datetime values (`started`, `current_phase_started`, `completed`, per-set `started`) are stored as **quoted ISO-8601 strings** (e.g. `"2026-06-20T18:02:11"`), never as bare YAML timestamps — this keeps `metadataCache` parsing predictable and avoids timezone auto-coercion.
 
 ---
 
@@ -332,22 +325,11 @@ Two tabs. The UI is **styled entirely with Obsidian's CSS variables**, so it fol
 
 ---
 
-## 9. Dataview / Bases queries this schema supports out of the box
+## 9. Querying / progress stats
 
-```dataview
-TABLE date, duration_minutes, total_sets_completed, total_volume_kg
-FROM "workouts/completed"
-WHERE type = "workout"
-SORT date DESC
-```
+Workout frontmatter no longer stores denormalized summaries (§5), so plain Dataview (DQL) can't read pre-computed counts/volume. Templates still expose `exercise_count`/`total_planned_sets` if you want simple DQL over templates, and any per-workout or per-exercise stat can be computed from the structured `exercises[].sets` data via a short DataviewJS script.
 
-```dataview
-TABLE total_planned_sets, exercise_count
-FROM "workouts/templates"
-WHERE type = "workout-template"
-```
-
-Per-exercise history across all workouts (e.g. "all Bench Press sets over the last year") requires scanning the `exercises[].sets` arrays inside frontmatter across all files in `completed/` — doable today via a short DataviewJS script since the data is fully structured in frontmatter (no markdown-table parsing needed). A dedicated in-plugin "Exercise Progress" view is a natural v2 feature once there's real history to query against — current schema already supports it without any migration, since `exercise_id` is the consistent join key everywhere.
+The intended home for stats is an **in-plugin "Exercise Progress" view** (v2): scan `completed/`, filter each workout's `exercises[]` by `exercise_id`, and chart e.g. top-set weight or per-session volume over time. The schema already supports this with no migration — `exercise_id` is the consistent join key everywhere, and each completed set carries `reps`/`weight` plus the workout's `started`/`completed` timestamps.
 
 ---
 

@@ -102,22 +102,15 @@ export function serializeTemplate(tpl: Template): string {
 
 // --- Workout --------------------------------------------------------------
 
-export function serializeWorkout(w: Workout): string {
+export function serializeWorkout(w: Workout, title: string): string {
 	const fm = [
 		line(0, 'type', w.type),
 		line(0, 'workout_id', w.workout_id),
 		line(0, 'template_id', w.template_id),
-		line(0, 'template_name', w.template_name),
 		line(0, 'status', w.status),
-		line(0, 'date', w.date),
 		line(0, 'started', w.started),
 		line(0, 'completed', w.completed),
-		line(0, 'duration_minutes', w.duration_minutes),
 		line(0, 'current_phase_started', w.current_phase_started),
-		line(0, 'exercise_count', w.exercise_count),
-		line(0, 'total_sets_planned', w.total_sets_planned),
-		line(0, 'total_sets_completed', w.total_sets_completed),
-		line(0, 'total_volume_kg', w.total_volume_kg),
 		'exercises:',
 	];
 	for (const ex of w.exercises) {
@@ -136,7 +129,7 @@ export function serializeWorkout(w: Workout): string {
 		}
 	}
 
-	const bodyParts: string[] = [`# ${w.template_name} — ${w.date}`, ''];
+	const bodyParts: string[] = [`# ${title}`, ''];
 	for (const ex of w.exercises) {
 		bodyParts.push(`## ${ex.name}`);
 		bodyParts.push('| Set | Reps | Weight (kg) | Done | Started | Duration (s) |');

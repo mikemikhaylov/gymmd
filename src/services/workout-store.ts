@@ -2,11 +2,11 @@ import { type App, TFile, normalizePath } from 'obsidian';
 import type { Template, Workout } from '../types';
 import { TYPE_WORKOUT } from '../utils/constants';
 import { workoutId } from '../utils/id';
-import { todayISODate, nowISODateTime, parseISODateTime } from '../utils/date';
+import { todayISODate, nowISODateTime } from '../utils/date';
 import { resolvePaths, ensureFolders, uniquePath, sanitizeFileName } from './paths';
 import { workoutFromFrontmatter } from './parse';
 import { serializeWorkout } from './serializer';
-import { recomputeWorkoutSummary } from './summary';
+import { renumberWorkout } from './summary';
 import { filesIn, readTyped, writeFile, getFile } from './vault-io';
 import type { GymMDSettings } from '../settings';
 
@@ -47,7 +47,8 @@ export class WorkoutStore {
 			const workout = await readTyped(this.app, file, workoutFromFrontmatter);
 			if (workout) entries.push({ file, workout });
 		}
-		return entries.sort((a, b) => b.workout.date.localeCompare(a.workout.date));
+		// Filenames are date-prefixed (YYYY-MM-DD …), so this sorts newest-first.
+		return entries.sort((a, b) => b.file.basename.localeCompare(a.file.basename));
 	}
 
 	async createFromTemplate(tpl: Template): Promise<WorkoutEntry> {
@@ -58,17 +59,10 @@ export class WorkoutStore {
 			type: TYPE_WORKOUT,
 			workout_id: workoutId(),
 			template_id: tpl.template_id,
-			template_name: tpl.name,
 			status: 'in_progress',
-			date,
 			started: nowISODateTime(),
 			completed: null,
-			duration_minutes: null,
 			current_phase_started: null,
-			exercise_count: tpl.exercises.length,
-			total_sets_planned: 0,
-			total_sets_completed: 0,
-			total_volume_kg: 0,
 			exercises: tpl.exercises.map((ex) => ({
 				uid: ex.uid,
 				exercise_id: ex.exercise_id,
@@ -84,35 +78,31 @@ export class WorkoutStore {
 				})),
 			})),
 		};
-		recomputeWorkoutSummary(workout);
+		renumberWorkout(workout);
 
 		const baseName = `${date} ${sanitizeFileName(tpl.name)}`;
 		const path = uniquePath(this.app, paths.active, baseName);
-		const file = await this.app.vault.create(path, serializeWorkout(workout));
+		const file = await this.app.vault.create(path, serializeWorkout(workout, baseName));
 		return { file, workout };
 	}
 
 	/** Autosave during a live workout. */
 	async save(file: TFile, workout: Workout): Promise<void> {
-		recomputeWorkoutSummary(workout);
-		await writeFile(this.app, file, serializeWorkout(workout));
+		renumberWorkout(workout);
+		await writeFile(this.app, file, serializeWorkout(workout, file.basename));
 	}
 
 	async finish(file: TFile, workout: Workout): Promise<TFile> {
 		workout.status = 'completed';
 		workout.completed = nowISODateTime();
 		workout.current_phase_started = null;
-		const start = parseISODateTime(workout.started);
-		const end = parseISODateTime(workout.completed);
-		workout.duration_minutes =
-			start !== null && end !== null ? Math.max(0, Math.round((end - start) / 60000)) : null;
-		recomputeWorkoutSummary(workout);
+		renumberWorkout(workout);
 		return this.moveTo(file, workout, this.paths().completed);
 	}
 
 	private async moveTo(file: TFile, workout: Workout, folder: string): Promise<TFile> {
 		await ensureFolders(this.app, this.paths());
-		await writeFile(this.app, file, serializeWorkout(workout));
+		await writeFile(this.app, file, serializeWorkout(workout, file.basename));
 		const target = uniquePath(this.app, folder, file.basename);
 		await this.app.fileManager.renameFile(file, target);
 		return getFile(this.app, normalizePath(target)) ?? file;

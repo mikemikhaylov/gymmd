@@ -146,17 +146,10 @@ export function workoutFromFrontmatter(fm: Rec): Workout | null {
 		type: TYPE_WORKOUT,
 		workout_id: asString(fm.workout_id),
 		template_id: asString(fm.template_id),
-		template_name: asString(fm.template_name),
 		status,
-		date: asDateString(fm.date),
 		started: fm.started ? asString(fm.started) : null,
 		completed: fm.completed ? asString(fm.completed) : null,
-		duration_minutes: asNumberOrNull(fm.duration_minutes),
 		current_phase_started: fm.current_phase_started ? asString(fm.current_phase_started) : null,
-		exercise_count: asNumber(fm.exercise_count, exercises.length),
-		total_sets_planned: asNumber(fm.total_sets_planned),
-		total_sets_completed: asNumber(fm.total_sets_completed),
-		total_volume_kg: asNumber(fm.total_volume_kg),
 		exercises,
 	};
 }

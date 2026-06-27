@@ -2,7 +2,7 @@
 
 A markdown-native Obsidian plugin for logging gym workouts. All data is stored as
 plain, human-editable markdown with structured YAML frontmatter, so it stays
-queryable by Dataview/Bases and readable by an AI coach. See [`PLAN.md`](PLAN.md)
+readable by scripts or an AI coach. See [`PLAN.md`](PLAN.md)
 for the full design and [`CLAUDE.md`](CLAUDE.md) for the architecture.
 
 - **Exercises**, **Templates**, and **Workouts** are separate, stably-linked files.

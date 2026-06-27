@@ -1,8 +1,30 @@
 import { type ReactElement, useCallback, useEffect, useState } from 'react';
 import { VIEW_TYPE_HISTORY } from '../../utils/constants';
 import type { WorkoutEntry } from '../../services/workout-store';
+import type { Workout } from '../../types';
 import { usePlugin } from '../context';
 import { ReactItemView } from './react-view';
+
+/** Derive display stats from a workout (nothing summary-like is stored anymore). */
+function summarize(w: Workout): { sets: number; volume: number; minutes: number | null } {
+	let sets = 0;
+	let volume = 0;
+	for (const ex of w.exercises) {
+		for (const s of ex.sets) {
+			if (s.done) {
+				sets += 1;
+				volume += (s.reps ?? 0) * (s.weight ?? 0);
+			}
+		}
+	}
+	const start = w.started ? Date.parse(w.started) : NaN;
+	const end = w.completed ? Date.parse(w.completed) : NaN;
+	const minutes =
+		Number.isFinite(start) && Number.isFinite(end)
+			? Math.max(0, Math.round((end - start) / 60000))
+			: null;
+	return { sets, volume: Math.round(volume * 100) / 100, minutes };
+}
 
 function History(): ReactElement {
 	const plugin = usePlugin();
@@ -32,7 +54,7 @@ function History(): ReactElement {
 			) : (
 				<ul className="gymmd-list">
 					{entries.map((entry) => {
-						const w = entry.workout;
+						const { sets, volume, minutes } = summarize(entry.workout);
 						return (
 							<li
 								key={entry.file.path}
@@ -40,11 +62,11 @@ function History(): ReactElement {
 								onClick={() => open(entry)}
 							>
 								<span>
-									<strong>{w.date}</strong> · {w.template_name}
+									<strong>{entry.file.basename}</strong>
 								</span>
 								<span className="gymmd-muted">
-									{w.duration_minutes != null ? `${w.duration_minutes} min · ` : ''}
-									{w.total_sets_completed} sets · {w.total_volume_kg} kg
+									{minutes != null ? `${minutes} min · ` : ''}
+									{sets} sets · {volume} kg
 								</span>
 							</li>
 						);
