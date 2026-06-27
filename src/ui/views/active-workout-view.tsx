@@ -353,11 +353,6 @@ function ActiveWorkout(): ReactElement {
 				</button>
 			</div>
 
-			<div className="gymmd-progress gymmd-muted">
-				{workout.total_sets_completed}/{workout.total_sets_planned} sets ·{' '}
-				{workout.total_volume_kg} kg volume
-			</div>
-
 			<div className="gymmd-tabs">
 				<button
 					className={tab === 'stopwatch' ? 'gymmd-tab-active' : ''}

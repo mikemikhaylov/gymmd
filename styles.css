@@ -194,10 +194,6 @@
 
 /* --- Active workout --- */
 
-.gymmd-progress {
-	margin-bottom: var(--size-4-2);
-}
-
 .gymmd-tabs {
 	display: flex;
 	gap: var(--size-4-2);
