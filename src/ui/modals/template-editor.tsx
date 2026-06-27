@@ -217,49 +217,51 @@ export function TemplateEditor({ file, initial, onSaved, close }: Props): ReactE
 						</span>
 					</div>
 
-					<table className="gymmd-set-table">
-						<thead>
-							<tr>
-								<th>Set</th>
-								<th>Reps</th>
-								<th>Weight (kg)</th>
-								<th></th>
-							</tr>
-						</thead>
-						<tbody>
-							{ex.sets.map((s, setIndex) => (
-								<tr key={setIndex}>
-									<td>{setIndex + 1}</td>
-									<td>
-										<NumberField
-											kind="reps"
-											value={s.reps}
-											onChange={(v) => editSet(exIndex, setIndex, 'reps', v ?? 0)}
-										/>
-									</td>
-									<td>
-										<NumberField
-											kind="weight"
-											value={s.weight}
-											onChange={(v) => editSet(exIndex, setIndex, 'weight', v ?? 0)}
-										/>
-									</td>
-									<td className="gymmd-row-actions">
-										<button onClick={() => moveSet(exIndex, setIndex, -1)} disabled={setIndex === 0}>
-											↑
-										</button>
-										<button
-											onClick={() => moveSet(exIndex, setIndex, 1)}
-											disabled={setIndex === ex.sets.length - 1}
-										>
-											↓
-										</button>
-										<button onClick={() => removeSet(exIndex, setIndex)}>✕</button>
-									</td>
+					<div className="gymmd-table-wrap">
+						<table className="gymmd-set-table">
+							<thead>
+								<tr>
+									<th>Set</th>
+									<th>Reps</th>
+									<th>Weight</th>
+									<th></th>
 								</tr>
-							))}
-						</tbody>
-					</table>
+							</thead>
+							<tbody>
+								{ex.sets.map((s, setIndex) => (
+									<tr key={setIndex}>
+										<td>{setIndex + 1}</td>
+										<td>
+											<NumberField
+												kind="reps"
+												value={s.reps}
+												onChange={(v) => editSet(exIndex, setIndex, 'reps', v ?? 0)}
+											/>
+										</td>
+										<td>
+											<NumberField
+												kind="weight"
+												value={s.weight}
+												onChange={(v) => editSet(exIndex, setIndex, 'weight', v ?? 0)}
+											/>
+										</td>
+										<td className="gymmd-row-actions">
+											<button onClick={() => moveSet(exIndex, setIndex, -1)} disabled={setIndex === 0}>
+												↑
+											</button>
+											<button
+												onClick={() => moveSet(exIndex, setIndex, 1)}
+												disabled={setIndex === ex.sets.length - 1}
+											>
+												↓
+											</button>
+											<button onClick={() => removeSet(exIndex, setIndex)}>✕</button>
+										</td>
+									</tr>
+								))}
+							</tbody>
+						</table>
+					</div>
 					<button onClick={() => addSet(exIndex)}>Add set</button>
 				</div>
 			))}

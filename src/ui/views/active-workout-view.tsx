@@ -208,6 +208,7 @@ function AllSetsTab({
 							</button>
 						</span>
 					</div>
+					<div className="gymmd-table-wrap">
 					<table className="gymmd-set-table">
 						<thead>
 							<tr>
@@ -263,6 +264,7 @@ function AllSetsTab({
 							})}
 						</tbody>
 					</table>
+					</div>
 					<button onClick={() => addSet(e)}>Add set</button>
 				</div>
 			))}

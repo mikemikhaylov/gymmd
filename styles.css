@@ -199,7 +199,16 @@
 }
 
 .gymmd-set-table input {
-	width: 72px;
+	width: 64px;
+	min-width: 64px;
+	box-sizing: border-box;
+	text-align: center;
+}
+
+/* Lets a wide set table scroll horizontally instead of clipping inputs. */
+.gymmd-table-wrap {
+	overflow-x: auto;
+	margin-bottom: var(--size-4-2);
 }
 
 .gymmd-done td {
@@ -383,4 +392,9 @@
 	background: var(--background-primary);
 	/* Extra bottom padding respects the iOS home indicator / safe area. */
 	padding: var(--size-4-3) 0 calc(var(--size-4-3) + env(safe-area-inset-bottom, 0px));
+}
+
+/* On mobile, lift the button above Obsidian's bottom toolbar / nav bar. */
+.is-mobile .gymmd-stopwatch-footer {
+	padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
 }
