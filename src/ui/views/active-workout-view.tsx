@@ -9,7 +9,7 @@ import { useNow } from '../hooks/use-now';
 import { useWakeLock } from '../hooks/use-wake-lock';
 import { confirm } from '../modals/prompts';
 import { runFinishFlow } from '../modals/finish-flow';
-import { NumberField } from '../components/number-field';
+import { NumberCell } from '../components/number-cell';
 
 interface Ref {
 	e: number;
@@ -87,7 +87,7 @@ function StopwatchTab({
 					<div className="gymmd-inputs">
 						<label>
 							Reps
-							<NumberField
+							<NumberCell
 								kind="reps"
 								value={workout.exercises[displayRef.e].sets[displayRef.s].reps}
 								onChange={(v) => editField('reps', v)}
@@ -95,7 +95,7 @@ function StopwatchTab({
 						</label>
 						<label>
 							Weight (kg)
-							<NumberField
+							<NumberCell
 								kind="weight"
 								value={workout.exercises[displayRef.e].sets[displayRef.s].weight}
 								onChange={(v) => editField('weight', v)}
@@ -224,14 +224,14 @@ function AllSetsTab({
 									<tr key={si} className={s.done ? 'gymmd-done' : ''}>
 										<td>{si + 1}</td>
 										<td>
-											<NumberField
+											<NumberCell
 												kind="reps"
 												value={s.reps}
 												onChange={(v) => editSet(e, si, 'reps', v)}
 											/>
 										</td>
 										<td>
-											<NumberField
+											<NumberCell
 												kind="weight"
 												value={s.weight}
 												onChange={(v) => editSet(e, si, 'weight', v)}
@@ -278,7 +278,6 @@ export function ActiveWorkout(): ReactElement {
 	const ctrl = useActiveWorkout(plugin);
 	const [tab, setTab] = useState<'stopwatch' | 'sets'>('stopwatch');
 	const [activeRef, setActiveRef] = useState<Ref | null>(null);
-	const [editing, setEditing] = useState(false);
 
 	const workout = ctrl.workout;
 
@@ -373,22 +372,12 @@ export function ActiveWorkout(): ReactElement {
 				</button>
 			</div>
 
-			<div
-				className="gymmd-tabcontent"
-				onFocus={(e) => {
-					if (e.target instanceof HTMLInputElement) setEditing(true);
-				}}
-				onBlur={(e) => {
-					if (e.target instanceof HTMLInputElement) setEditing(false);
-				}}
-			>
+			<div className="gymmd-tabcontent">
 				{tab === 'stopwatch' ? (
 					<StopwatchTab workout={workout} actions={actions} />
 				) : (
 					<AllSetsTab workout={workout} actions={actions} />
 				)}
-				{/* Scroll room so a focused field can rise above the mobile keyboard. */}
-				{editing && <div className="gymmd-kb-spacer" />}
 			</div>
 		</div>
 	);

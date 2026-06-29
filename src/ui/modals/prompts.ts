@@ -41,6 +41,72 @@ export function promptText(
 	});
 }
 
+/**
+ * Prompt for a validated number. Resolves the value on save (or null if the
+ * field was cleared), or `undefined` if cancelled/dismissed.
+ *  - kind="reps":   positive integer 1–999.
+ *  - kind="weight": ≥ 0, at most 2 decimals.
+ */
+export function promptNumber(
+	app: App,
+	opts: { title: string; kind: 'reps' | 'weight'; value: number | null },
+): Promise<number | null | undefined> {
+	return new Promise((resolve) => {
+		const modal = new Modal(app);
+		modal.titleEl.setText(opts.title);
+		const allowed = opts.kind === 'reps' ? /^\d{0,3}$/ : /^\d{0,5}(\.\d{0,2})?$/;
+		let text = opts.value === null ? '' : String(opts.value);
+		let submitted = false;
+
+		new Setting(modal.contentEl).addText((t) => {
+			t.inputEl.inputMode = opts.kind === 'reps' ? 'numeric' : 'decimal';
+			t.inputEl.setAttr('enterkeyhint', 'done');
+			t.inputEl.addClass('gymmd-prompt-input');
+			t.setValue(text);
+			t.onChange((v) => {
+				if (v !== '' && !allowed.test(v)) {
+					t.setValue(text); // reject invalid keystroke
+					return;
+				}
+				text = v;
+			});
+			t.inputEl.addEventListener('keydown', (e) => {
+				if (e.key === 'Enter') {
+					submitted = true;
+					modal.close();
+				}
+			});
+			window.setTimeout(() => {
+				t.inputEl.focus();
+				t.inputEl.select();
+			}, 0);
+		});
+
+		new Setting(modal.contentEl)
+			.addButton((b) =>
+				b
+					.setButtonText('Save')
+					.setCta()
+					.onClick(() => {
+						submitted = true;
+						modal.close();
+					}),
+			)
+			.addButton((b) => b.setButtonText('Cancel').onClick(() => modal.close()));
+
+		modal.onClose = () => {
+			if (!submitted) return resolve(undefined);
+			const trimmed = text.trim();
+			if (trimmed === '') return resolve(null);
+			const n = Number(trimmed);
+			if (!Number.isFinite(n)) return resolve(undefined);
+			if (opts.kind === 'reps') return resolve(Math.min(999, Math.max(1, Math.floor(n))));
+			return resolve(Math.min(99999.99, Math.max(0, Math.round(n * 100) / 100)));
+		};
+		modal.open();
+	});
+}
+
 /** Yes/no confirmation. Resolves true if the primary action was chosen. */
 export function confirm(
 	app: App,

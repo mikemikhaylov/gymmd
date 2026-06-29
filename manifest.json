@@ -1,7 +1,7 @@
 {
 	"id": "gymmd",
 	"name": "GymMD — Workout Tracker",
-	"version": "0.1.5",
+	"version": "0.1.6",
 	"minAppVersion": "1.7.2",
 	"description": "Markdown-native gym workout logging with frontmatter structured data for Dataview/Bases queries.",
 	"author": "Mikhail",

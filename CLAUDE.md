@@ -41,7 +41,8 @@ src/
     views/             # app-view.tsx = the single ItemView + <App> router;
                        #   home/exercise-list/template-list/history/active-workout/
                        #   reports are plain React screen components rendered by it
-    components/        # NumberField (validated reps/weight input)
+    components/        # NumberField (inline validated input, template editor),
+                       #   NumberCell (tap-to-open number popup, active workout)
     modals/            # React modal base, prompts, template editor, finish flow
     hooks/             # useActiveWorkout (autosave), useNow (ticking clock),
                        #   useWakeLock (keep screen awake during a workout)
