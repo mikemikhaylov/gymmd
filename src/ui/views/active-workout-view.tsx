@@ -7,6 +7,7 @@ import { useNav } from '../navigation';
 import { useActiveWorkout, type ActiveWorkoutController } from '../hooks/use-active-workout';
 import { useNow } from '../hooks/use-now';
 import { useKeyboardInset } from '../hooks/use-keyboard-inset';
+import { useWakeLock } from '../hooks/use-wake-lock';
 import { confirm } from '../modals/prompts';
 import { runFinishFlow } from '../modals/finish-flow';
 import { NumberField } from '../components/number-field';
@@ -281,6 +282,9 @@ export function ActiveWorkout(): ReactElement {
 	const [activeRef, setActiveRef] = useState<Ref | null>(null);
 
 	const workout = ctrl.workout;
+
+	// Keep the screen awake while a workout is in progress and this view is open.
+	useWakeLock(ctrl.phase === 'ready');
 
 	if (ctrl.phase === 'loading') {
 		return (
