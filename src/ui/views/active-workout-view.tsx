@@ -6,7 +6,6 @@ import { usePlugin } from '../context';
 import { useNav } from '../navigation';
 import { useActiveWorkout, type ActiveWorkoutController } from '../hooks/use-active-workout';
 import { useNow } from '../hooks/use-now';
-import { useKeyboardInset } from '../hooks/use-keyboard-inset';
 import { useWakeLock } from '../hooks/use-wake-lock';
 import { confirm } from '../modals/prompts';
 import { runFinishFlow } from '../modals/finish-flow';
@@ -277,9 +276,9 @@ export function ActiveWorkout(): ReactElement {
 	const plugin = usePlugin();
 	const nav = useNav();
 	const ctrl = useActiveWorkout(plugin);
-	const keyboardInset = useKeyboardInset();
 	const [tab, setTab] = useState<'stopwatch' | 'sets'>('stopwatch');
 	const [activeRef, setActiveRef] = useState<Ref | null>(null);
+	const [editing, setEditing] = useState(false);
 
 	const workout = ctrl.workout;
 
@@ -374,12 +373,22 @@ export function ActiveWorkout(): ReactElement {
 				</button>
 			</div>
 
-			<div className="gymmd-tabcontent" style={{ paddingBottom: keyboardInset || undefined }}>
+			<div
+				className="gymmd-tabcontent"
+				onFocus={(e) => {
+					if (e.target instanceof HTMLInputElement) setEditing(true);
+				}}
+				onBlur={(e) => {
+					if (e.target instanceof HTMLInputElement) setEditing(false);
+				}}
+			>
 				{tab === 'stopwatch' ? (
 					<StopwatchTab workout={workout} actions={actions} />
 				) : (
 					<AllSetsTab workout={workout} actions={actions} />
 				)}
+				{/* Scroll room so a focused field can rise above the mobile keyboard. */}
+				{editing && <div className="gymmd-kb-spacer" />}
 			</div>
 		</div>
 	);

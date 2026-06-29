@@ -295,7 +295,7 @@ Two tabs. The UI is **styled entirely with Obsidian's CSS variables**, so it fol
 
 **Input validation** (reps/weight fields everywhere): reps must be a positive integer 1–999; weight must be ≥ 0 with at most two decimal places (`1.75` ok, `1.757` rejected). Enforced by a shared `NumberField` component, which also handles mobile keyboards (`inputmode` numeric/decimal, `enterKeyHint=done`, Enter blurs to dismiss, scrolls itself into view on focus).
 
-**Mobile keyboard:** the Active Workout view tracks the on-screen keyboard height via the `visualViewport` API (`useKeyboardInset`) and pads its bottom by that amount, lifting the bottom-pinned inputs/button above the keyboard so a focused field is never hidden behind it.
+**Mobile keyboard:** the Active Workout view is a single scrolling container (`overflow-y: auto`, like the template editor — which handles the keyboard correctly) with a non-shrinking tab-content area, so the keyboard can never clip a field (it scrolls instead). On mobile, focusing a field adds a tall scroll spacer below it (`.gymmd-kb-spacer`, 60vh) so the browser can lift the focused field above the keyboard even on the sparse stopwatch screen.
 
 **Screen wake lock:** while a workout is in progress and the Active Workout view is open, the screen is kept awake via the Screen Wake Lock API (`useWakeLock`), re-acquired on visibility change. No-ops where unsupported.
 

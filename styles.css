@@ -291,25 +291,25 @@
 	background: var(--interactive-accent-hover);
 }
 
-/* Active view fills the pane; only the tab content scrolls, so the
-   Start/End/Finish button can be pinned to the bottom of the screen. */
+/* Active view is a single scrolling container (like the template editor, which
+   handles the mobile keyboard correctly). The tab content grows to fill so the
+   Start/End button sits at the bottom, but never shrinks — when the keyboard
+   resizes the pane it overflows into a scroll instead of being clipped. */
 .gymmd-active {
 	display: flex;
 	flex-direction: column;
-	overflow: hidden;
+	overflow-y: auto;
 	padding-bottom: 0;
 }
 
 .gymmd-tabcontent {
-	flex: 1 1 auto;
-	min-height: 0;
-	overflow-y: auto;
+	flex: 1 0 auto;
 	display: flex;
 	flex-direction: column;
 }
 
 .gymmd-stopwatch {
-	flex: 1 1 auto;
+	flex: 1 0 auto;
 	display: flex;
 	flex-direction: column;
 	text-align: center;
@@ -317,6 +317,17 @@
 
 .gymmd-allsets {
 	padding-bottom: var(--size-4-4);
+}
+
+/* Reserves scroll space below a focused field so it can rise above the mobile
+   keyboard (no effect on desktop). */
+.gymmd-kb-spacer {
+	flex: 0 0 auto;
+	height: 0;
+}
+
+.is-mobile .gymmd-kb-spacer {
+	height: 60vh;
 }
 
 .gymmd-timer {
