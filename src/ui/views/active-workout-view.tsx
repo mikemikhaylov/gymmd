@@ -64,7 +64,7 @@ function StopwatchTab({
 	};
 
 	return (
-		<div className="gymmd-stopwatch">
+		<div className={isActive ? 'gymmd-stopwatch gymmd-running' : 'gymmd-stopwatch'}>
 			<div className="gymmd-timer">{formatStopwatch(elapsed)}</div>
 
 			{displayRef ? (
@@ -107,7 +107,7 @@ function StopwatchTab({
 						Finish workout
 					</button>
 				) : isActive ? (
-					<button className="gymmd-big-button" onClick={endActiveSet}>
+					<button className="gymmd-big-button gymmd-end" onClick={endActiveSet}>
 						End set
 					</button>
 				) : (

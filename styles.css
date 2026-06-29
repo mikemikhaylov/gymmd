@@ -386,6 +386,25 @@
 	background: var(--interactive-accent-hover);
 }
 
+/* While a set is in progress: green "live" timer + red "End set" button. */
+.gymmd-running .gymmd-timer {
+	color: var(--color-green);
+}
+
+.gymmd-running .gymmd-current-exercise,
+.gymmd-running .gymmd-set-indicator {
+	color: var(--color-green);
+}
+
+.gymmd-big-button.gymmd-end {
+	background: var(--color-green);
+}
+
+.gymmd-big-button.gymmd-end:hover {
+	background: var(--color-green);
+	filter: brightness(1.1);
+}
+
 .gymmd-stopwatch-footer {
 	/* Pinned to the bottom of the stopwatch column via flex. */
 	margin-top: auto;
