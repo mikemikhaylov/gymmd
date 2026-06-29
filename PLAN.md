@@ -297,6 +297,8 @@ Two tabs. The UI is **styled entirely with Obsidian's CSS variables**, so it fol
 
 **Mobile keyboard:** the Active Workout view tracks the on-screen keyboard height via the `visualViewport` API (`useKeyboardInset`) and pads its bottom by that amount, lifting the bottom-pinned inputs/button above the keyboard so a focused field is never hidden behind it.
 
+**Screen wake lock:** while a workout is in progress and the Active Workout view is open, the screen is kept awake via the Screen Wake Lock API (`useWakeLock`), re-acquired on visibility change. No-ops where unsupported.
+
 ### Tab 1 — Stopwatch
 - One large centered timer. Sits at `0:00` until the first **Start Set** press. Resets to `0` and restarts on **every** press of Start Set or End Set (single continuous counter). `current_phase_started` is the file-persisted anchor, so the timer is correct after reopening Obsidian.
 - The stopwatch shows the **current set** = the active (in-progress) set if there is one, otherwise the **first not-done set**. Its `reps`/`weight` (copied from the template) are shown and **editable at any time**, including before you press Start — so you can see and adjust the prescription before loading the bar. There is **no manual prev/next** — the Start/End button is the only navigation here.

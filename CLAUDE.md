@@ -44,7 +44,8 @@ src/
     components/        # NumberField (validated reps/weight input)
     modals/            # React modal base, prompts, template editor, finish flow
     hooks/             # useActiveWorkout (autosave), useNow (ticking clock),
-                       #   useKeyboardInset (lift content above mobile keyboard)
+                       #   useKeyboardInset (lift content above mobile keyboard),
+                       #   useWakeLock (keep screen awake during a workout)
   services/            # Vault I/O, serializer/parser, stores, summary, diff, report
   utils/               # ID generation, date helpers, constants
 manifest.json          # Plugin metadata — never change `id` after release
