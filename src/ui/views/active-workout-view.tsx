@@ -68,43 +68,40 @@ function StopwatchTab({
 			<div className="gymmd-timer">{formatStopwatch(elapsed)}</div>
 
 			{displayRef ? (
-				(() => {
-					const exercise = workout.exercises[displayRef.e];
-					const set = exercise.sets[displayRef.s];
-					return (
-						<>
-							<div className="gymmd-current-exercise">{exercise.name}</div>
-							<div className="gymmd-set-indicator">
-								Set {displayRef.s + 1} of {exercise.sets.length}
-								{isActive ? ' · in progress' : ''}
-							</div>
-
-							<div className="gymmd-inputs">
-								<label>
-									Reps
-									<NumberField
-										kind="reps"
-										value={set.reps}
-										onChange={(v) => editField('reps', v)}
-									/>
-								</label>
-								<label>
-									Weight (kg)
-									<NumberField
-										kind="weight"
-										value={set.weight}
-										onChange={(v) => editField('weight', v)}
-									/>
-								</label>
-							</div>
-						</>
-					);
-				})()
+				<>
+					<div className="gymmd-current-exercise">
+						{workout.exercises[displayRef.e].name}
+					</div>
+					<div className="gymmd-set-indicator">
+						Set {displayRef.s + 1} of {workout.exercises[displayRef.e].sets.length}
+						{isActive ? ' · in progress' : ''}
+					</div>
+				</>
 			) : (
 				<div className="gymmd-all-done">All sets done — finish your workout.</div>
 			)}
 
 			<div className="gymmd-stopwatch-footer">
+				{displayRef && (
+					<div className="gymmd-inputs">
+						<label>
+							Reps
+							<NumberField
+								kind="reps"
+								value={workout.exercises[displayRef.e].sets[displayRef.s].reps}
+								onChange={(v) => editField('reps', v)}
+							/>
+						</label>
+						<label>
+							Weight (kg)
+							<NumberField
+								kind="weight"
+								value={workout.exercises[displayRef.e].sets[displayRef.s].weight}
+								onChange={(v) => editField('weight', v)}
+							/>
+						</label>
+					</div>
+				)}
 				{!displayRef ? (
 					<button className="gymmd-big-button" onClick={onFinish}>
 						Finish workout
