@@ -351,10 +351,7 @@ export function ActiveWorkout(): ReactElement {
 	const actions: SetActions = { ctrl, activeRef, startSetAt, endActiveSet, onFinish: () => void onFinish() };
 
 	return (
-		<div
-			className="gymmd-view gymmd-active"
-			style={{ paddingBottom: keyboardInset || undefined }}
-		>
+		<div className="gymmd-view gymmd-active">
 			<div className="gymmd-header">
 				<h2>{ctrl.title}</h2>
 				<button className="mod-cta" onClick={() => void onFinish()}>
@@ -377,7 +374,7 @@ export function ActiveWorkout(): ReactElement {
 				</button>
 			</div>
 
-			<div className="gymmd-tabcontent">
+			<div className="gymmd-tabcontent" style={{ paddingBottom: keyboardInset || undefined }}>
 				{tab === 'stopwatch' ? (
 					<StopwatchTab workout={workout} actions={actions} />
 				) : (

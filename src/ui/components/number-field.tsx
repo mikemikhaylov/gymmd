@@ -59,12 +59,7 @@ export function NumberField({ value, onChange, kind, className }: Props): ReactE
 			enterKeyHint="done"
 			className={className}
 			value={text}
-			onFocus={(e) => {
-				setFocused(true);
-				// After the keyboard opens, make sure the field is visible.
-				const el = e.currentTarget;
-				window.setTimeout(() => el.scrollIntoView({ block: 'nearest' }), 350);
-			}}
+			onFocus={() => setFocused(true)}
 			onBlur={() => {
 				setFocused(false);
 				commit(text);
