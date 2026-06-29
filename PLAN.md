@@ -293,7 +293,9 @@ Implementation: a single `GymMDView` renders an `<App>` that holds a `Route` sta
 
 Two tabs. The UI is **styled entirely with Obsidian's CSS variables**, so it follows the user's active theme (light or dark) and looks native — no forced colors. Large tap targets for phone use in the gym. The header has a single **Finish** button, which asks for confirmation. There is no "abandon" — to discard a workout, finish it and delete the file, or delete the in-progress file from the `active/` folder directly. (Confirmations use the `mod-warning` button class — version-safe, no dependency on the 1.13 `setDestructive` API.)
 
-**Input validation** (reps/weight fields everywhere): reps must be a positive integer 1–999; weight must be ≥ 0 with at most two decimal places (`1.75` ok, `1.757` rejected). Enforced by a shared `NumberField` component.
+**Input validation** (reps/weight fields everywhere): reps must be a positive integer 1–999; weight must be ≥ 0 with at most two decimal places (`1.75` ok, `1.757` rejected). Enforced by a shared `NumberField` component, which also handles mobile keyboards (`inputmode` numeric/decimal, `enterKeyHint=done`, Enter blurs to dismiss, scrolls itself into view on focus).
+
+**Mobile keyboard:** the Active Workout view tracks the on-screen keyboard height via the `visualViewport` API (`useKeyboardInset`) and pads its bottom by that amount, lifting the bottom-pinned inputs/button above the keyboard so a focused field is never hidden behind it.
 
 ### Tab 1 — Stopwatch
 - One large centered timer. Sits at `0:00` until the first **Start Set** press. Resets to `0` and restarts on **every** press of Start Set or End Set (single continuous counter). `current_phase_started` is the file-persisted anchor, so the timer is correct after reopening Obsidian.

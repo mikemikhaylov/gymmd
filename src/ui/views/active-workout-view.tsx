@@ -6,6 +6,7 @@ import { usePlugin } from '../context';
 import { useNav } from '../navigation';
 import { useActiveWorkout, type ActiveWorkoutController } from '../hooks/use-active-workout';
 import { useNow } from '../hooks/use-now';
+import { useKeyboardInset } from '../hooks/use-keyboard-inset';
 import { confirm } from '../modals/prompts';
 import { runFinishFlow } from '../modals/finish-flow';
 import { NumberField } from '../components/number-field';
@@ -275,6 +276,7 @@ export function ActiveWorkout(): ReactElement {
 	const plugin = usePlugin();
 	const nav = useNav();
 	const ctrl = useActiveWorkout(plugin);
+	const keyboardInset = useKeyboardInset();
 	const [tab, setTab] = useState<'stopwatch' | 'sets'>('stopwatch');
 	const [activeRef, setActiveRef] = useState<Ref | null>(null);
 
@@ -345,7 +347,10 @@ export function ActiveWorkout(): ReactElement {
 	const actions: SetActions = { ctrl, activeRef, startSetAt, endActiveSet, onFinish: () => void onFinish() };
 
 	return (
-		<div className="gymmd-view gymmd-active">
+		<div
+			className="gymmd-view gymmd-active"
+			style={{ paddingBottom: keyboardInset || undefined }}
+		>
 			<div className="gymmd-header">
 				<h2>{ctrl.title}</h2>
 				<button className="mod-cta" onClick={() => void onFinish()}>

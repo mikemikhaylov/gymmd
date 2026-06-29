@@ -56,12 +56,21 @@ export function NumberField({ value, onChange, kind, className }: Props): ReactE
 		<input
 			type="text"
 			inputMode={kind === 'reps' ? 'numeric' : 'decimal'}
+			enterKeyHint="done"
 			className={className}
 			value={text}
-			onFocus={() => setFocused(true)}
+			onFocus={(e) => {
+				setFocused(true);
+				// After the keyboard opens, make sure the field is visible.
+				const el = e.currentTarget;
+				window.setTimeout(() => el.scrollIntoView({ block: 'nearest' }), 350);
+			}}
 			onBlur={() => {
 				setFocused(false);
 				commit(text);
+			}}
+			onKeyDown={(e) => {
+				if (e.key === 'Enter') e.currentTarget.blur();
 			}}
 			onChange={(e) => handleChange(e.target.value)}
 		/>

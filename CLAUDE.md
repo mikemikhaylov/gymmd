@@ -43,7 +43,8 @@ src/
                        #   reports are plain React screen components rendered by it
     components/        # NumberField (validated reps/weight input)
     modals/            # React modal base, prompts, template editor, finish flow
-    hooks/             # useActiveWorkout (autosave), useNow (ticking clock)
+    hooks/             # useActiveWorkout (autosave), useNow (ticking clock),
+                       #   useKeyboardInset (lift content above mobile keyboard)
   services/            # Vault I/O, serializer/parser, stores, summary, diff, report
   utils/               # ID generation, date helpers, constants
 manifest.json          # Plugin metadata — never change `id` after release
