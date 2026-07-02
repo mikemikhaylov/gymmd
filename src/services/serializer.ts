@@ -8,6 +8,11 @@ import { timeOfDay } from '../utils/date';
  * YAML frontmatter, never the tables.
  */
 
+/** Recording conventions, added as a short note to every workout body. */
+export const WORKOUT_NOTE =
+	'> Weights are the total load lifted — for dumbbells, the combined weight of both. ' +
+	'Reps are total reps — for alternating/both-side exercises (e.g. lunges), both sides combined.';
+
 // --- YAML scalar emission -------------------------------------------------
 
 /** Quote a string only when bare YAML would misparse it. */
@@ -130,7 +135,7 @@ export function serializeWorkout(w: Workout, title: string): string {
 		}
 	}
 
-	const bodyParts: string[] = [`# ${title}`, ''];
+	const bodyParts: string[] = [`# ${title}`, '', WORKOUT_NOTE, ''];
 	for (const ex of w.exercises) {
 		bodyParts.push(`## ${ex.name}`);
 		bodyParts.push('| Set | Reps | Weight (kg) | Done | Started | Duration (s) |');
