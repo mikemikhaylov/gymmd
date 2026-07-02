@@ -307,6 +307,8 @@ Two tabs. The UI is **styled entirely with Obsidian's CSS variables**, so it fol
     - **Start Set** → timer resets & starts, button becomes **End Set**, and this set is marked active (reflected in Tab 2).
     - **End Set** → commits `reps`/`weight`/`duration_seconds`, marks `done: true`, timer resets & restarts, and the current set advances to the **first remaining not-done set** (anywhere in the workout, not just the next one).
     - When **all sets are done**, the button becomes **Finish Workout** (runs the §7 finish flow, including the template-update prompt if anything diverged).
+- **Button colour** = two states only: neutral/gray while resting (**Start Set**), green while a set is active or when finishing (**End Set** / **Finish Workout**). The timer + labels also turn green during an active set.
+- **Rest-timer background tint:** while resting (no active set), the whole view background stays normal for the first **1:30**, then reddens one subtle step every **30s**, capping at **5:00** (and unchanged beyond). It returns to normal the moment a set starts. A visual nudge that rest is dragging on.
 - There is no separate "discard set" — to undo a set, switch to **All Sets** and uncheck its **Done** box.
 
 ### Tab 2 — All Sets
@@ -366,7 +368,7 @@ It's pure data (no advice text) so the coach interprets it. Generation is a pure
 4. **Workout creation from template** — clones the chosen template's data into a new `active/` file, sets `status: in_progress`, `started`. There is **no "from scratch" creation** — every workout starts from a template. To work a new exercise, add it to a template first, then start a workout. `current_phase_started` is left blank until the first Start Set press (timer sits at `0:00`).
 5. **Active Workout view** — Tab 1 (stopwatch) and Tab 2 (all sets), timestamp-based timer, autosave on every mutation.
 6. **Finish flow** — diff against template, confirmation modal, file move to `completed/`.
-7. **History view** — list of completed workouts, read-only or editable detail view.
+7. **History view** — list of completed workouts (tap a row to open the note); each row has a **Copy** button that copies the whole workout markdown file to the clipboard.
 8. **Settings** — configurable folder paths (base path + `exercises/`, `templates/`, `active/`, `completed/` sub-folder names).
 9. *(Later)* Exercise progress view / DataviewJS examples, bodyweight tracking, AI-coach-facing export helpers.
 

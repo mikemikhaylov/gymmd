@@ -104,11 +104,11 @@ function StopwatchTab({
 					</div>
 				)}
 				{!displayRef ? (
-					<button className="gymmd-big-button" onClick={onFinish}>
+					<button className="gymmd-big-button gymmd-green" onClick={onFinish}>
 						Finish workout
 					</button>
 				) : isActive ? (
-					<button className="gymmd-big-button gymmd-end" onClick={endActiveSet}>
+					<button className="gymmd-big-button gymmd-green" onClick={endActiveSet}>
 						End set
 					</button>
 				) : (
@@ -284,6 +284,9 @@ export function ActiveWorkout(): ReactElement {
 	// Keep the screen awake while a workout is in progress and this view is open.
 	useWakeLock(ctrl.phase === 'ready');
 
+	// Tick so the rest-timer background tint updates while resting.
+	const now = useNow(ctrl.phase === 'ready');
+
 	if (ctrl.phase === 'loading') {
 		return (
 			<div className="gymmd-view">
@@ -348,8 +351,18 @@ export function ActiveWorkout(): ReactElement {
 
 	const actions: SetActions = { ctrl, activeRef, startSetAt, endActiveSet, onFinish: () => void onFinish() };
 
+	// Rest-timer background tint: none while a set is active or for the first
+	// 1:30 of rest, then reddens one step per 30s up to a cap at 5:00.
+	const restAnchor = activeRef === null ? parseISODateTime(workout.current_phase_started) : null;
+	const restSeconds = restAnchor !== null ? Math.max(0, (now - restAnchor) / 1000) : 0;
+	const restLevel = restSeconds < 90 ? 0 : Math.min(8, Math.floor((restSeconds - 90) / 30) + 1);
+	const restBackground =
+		restLevel > 0
+			? `color-mix(in srgb, var(--background-primary), #e05555 ${restLevel * 2.5}%)`
+			: undefined;
+
 	return (
-		<div className="gymmd-view gymmd-active">
+		<div className="gymmd-view gymmd-active" style={{ background: restBackground }}>
 			<div className="gymmd-header">
 				<h2>{ctrl.title}</h2>
 				<button className="mod-cta" onClick={() => void onFinish()}>

@@ -1,3 +1,4 @@
+import { Notice } from 'obsidian';
 import { type ReactElement, useCallback, useEffect, useState } from 'react';
 import type { WorkoutEntry } from '../../services/workout-store';
 import type { Workout } from '../../types';
@@ -40,6 +41,16 @@ export function History(): ReactElement {
 		void plugin.app.workspace.getLeaf(false).openFile(entry.file);
 	};
 
+	const copy = async (entry: WorkoutEntry) => {
+		try {
+			const content = await plugin.app.vault.read(entry.file);
+			await navigator.clipboard.writeText(content);
+			new Notice('Workout copied to clipboard');
+		} catch {
+			new Notice('Could not copy to clipboard');
+		}
+	};
+
 	return (
 		<div className="gymmd-view">
 			<div className="gymmd-header">
@@ -61,10 +72,21 @@ export function History(): ReactElement {
 							>
 								<span>
 									<strong>{entry.file.basename}</strong>
+									<span className="gymmd-muted">
+										{' '}
+										· {minutes != null ? `${minutes} min · ` : ''}
+										{sets} sets · {volume} kg
+									</span>
 								</span>
-								<span className="gymmd-muted">
-									{minutes != null ? `${minutes} min · ` : ''}
-									{sets} sets · {volume} kg
+								<span className="gymmd-row-actions">
+									<button
+										onClick={(e) => {
+											e.stopPropagation();
+											void copy(entry);
+										}}
+									>
+										Copy
+									</button>
 								</span>
 							</li>
 						);

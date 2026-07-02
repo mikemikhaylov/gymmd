@@ -300,6 +300,8 @@
 	flex-direction: column;
 	overflow-y: auto;
 	padding-bottom: 0;
+	/* Smoothly ease the rest-timer background tint between steps. */
+	transition: background 1s linear;
 }
 
 .gymmd-tabcontent {
@@ -385,38 +387,37 @@
 	font-size: var(--font-ui-small);
 }
 
+/* Two states only: neutral/gray by default (rest), green when active/finish. */
 .gymmd-big-button {
 	width: 100%;
 	padding: var(--size-4-4);
 	font-size: 1.4em;
 	font-weight: var(--font-semibold);
 	border-radius: var(--radius-m);
-	background: var(--interactive-accent);
-	color: var(--text-on-accent);
+	background: var(--interactive-normal);
+	color: var(--text-normal);
 	cursor: pointer;
 }
 
 .gymmd-big-button:hover {
-	background: var(--interactive-accent-hover);
+	background: var(--interactive-hover);
 }
 
-/* While a set is in progress: green "live" timer + red "End set" button. */
-.gymmd-running .gymmd-timer {
-	color: var(--color-green);
+.gymmd-big-button.gymmd-green {
+	background: var(--color-green);
+	color: var(--text-on-accent);
 }
 
+.gymmd-big-button.gymmd-green:hover {
+	background: var(--color-green);
+	filter: brightness(1.1);
+}
+
+/* While a set is in progress: green "live" timer + labels. */
+.gymmd-running .gymmd-timer,
 .gymmd-running .gymmd-current-exercise,
 .gymmd-running .gymmd-set-indicator {
 	color: var(--color-green);
-}
-
-.gymmd-big-button.gymmd-end {
-	background: var(--color-green);
-}
-
-.gymmd-big-button.gymmd-end:hover {
-	background: var(--color-green);
-	filter: brightness(1.1);
 }
 
 .gymmd-stopwatch-footer {
