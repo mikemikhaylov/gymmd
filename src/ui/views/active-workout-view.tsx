@@ -356,9 +356,11 @@ export function ActiveWorkout(): ReactElement {
 	const restAnchor = activeRef === null ? parseISODateTime(workout.current_phase_started) : null;
 	const restSeconds = restAnchor !== null ? Math.max(0, (now - restAnchor) / 1000) : 0;
 	const restLevel = restSeconds < 90 ? 0 : Math.min(8, Math.floor((restSeconds - 90) / 30) + 1);
+	// Bold, glanceable tint: ~19% red at the first step (1:30), +7% every 30s,
+	// up to ~68% at 5:00 — clearly visible from across the gym.
 	const restBackground =
 		restLevel > 0
-			? `color-mix(in srgb, var(--background-primary), #e05555 ${restLevel * 2.5}%)`
+			? `color-mix(in srgb, var(--background-primary), #e83b3b ${12 + restLevel * 7}%)`
 			: undefined;
 
 	return (

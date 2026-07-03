@@ -421,9 +421,9 @@
 }
 
 .gymmd-stopwatch-footer {
-	/* Pinned to the bottom of the stopwatch column via flex. */
+	/* Pinned to the bottom of the stopwatch column via flex. Transparent so the
+	   rest-timer background tint covers the whole screen, footer included. */
 	margin-top: auto;
-	background: var(--background-primary);
 	/* Extra bottom padding respects the iOS home indicator / safe area. */
 	padding: var(--size-4-3) 0 calc(var(--size-4-3) + env(safe-area-inset-bottom, 0px));
 }
