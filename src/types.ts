@@ -74,6 +74,18 @@ export interface WorkoutExercise {
 	sets: WorkoutSet[];
 }
 
+// --- Body weight ----------------------------------------------------------
+
+export interface BodyWeightMeasurement {
+	id: string;
+	/** Weight in kg. */
+	weight: number;
+	/** ISO-8601 datetime, e.g. "2026-07-04T08:30:00". */
+	at: ISODateTime;
+}
+
+// --- Workout --------------------------------------------------------------
+
 export interface Workout {
 	type: 'workout';
 	workout_id: string;

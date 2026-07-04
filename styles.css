@@ -270,6 +270,24 @@
 	color: var(--text-accent);
 }
 
+/* --- Body weight editor --- */
+
+.gymmd-bw-editor h3 {
+	margin-top: 0;
+}
+
+.gymmd-bw-field {
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-4-1);
+	margin-bottom: var(--size-4-3);
+}
+
+.gymmd-bw-field input {
+	width: 100%;
+	font-size: 1.1em;
+}
+
 /* --- Active workout --- */
 
 .gymmd-tabs {

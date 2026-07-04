@@ -34,3 +34,7 @@ export function workoutId(): string {
 export function entryUid(): string {
 	return `e-${randomSuffix(6)}`;
 }
+
+export function bodyWeightId(): string {
+	return `bw-${randomSuffix(6)}`;
+}

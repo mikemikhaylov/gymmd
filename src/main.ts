@@ -4,9 +4,11 @@ import { ExerciseStore } from './services/exercise-store';
 import { TemplateStore, type TemplateEntry } from './services/template-store';
 import { WorkoutStore } from './services/workout-store';
 import { ReportStore } from './services/report-store';
+import { BodyWeightStore } from './services/body-weight-store';
 import { resolvePaths, ensureFolders } from './services/paths';
 import { VIEW_TYPE_APP } from './utils/constants';
 import { GymMDView } from './ui/views/app-view';
+import type { Route } from './ui/navigation';
 import { chooseAction } from './ui/modals/prompts';
 
 export default class GymMDPlugin extends Plugin {
@@ -15,6 +17,9 @@ export default class GymMDPlugin extends Plugin {
 	templates!: TemplateStore;
 	workouts!: WorkoutStore;
 	reports!: ReportStore;
+	bodyWeight!: BodyWeightStore;
+	/** Deep-link target read by the app view when it mounts. */
+	pendingRoute: Route | null = null;
 
 	async onload(): Promise<void> {
 		await this.loadSettings();
@@ -24,6 +29,7 @@ export default class GymMDPlugin extends Plugin {
 		this.templates = new TemplateStore(this.app, getSettings);
 		this.workouts = new WorkoutStore(this.app, getSettings);
 		this.reports = new ReportStore(this.app, getSettings);
+		this.bodyWeight = new BodyWeightStore(this.app, getSettings);
 
 		this.registerView(VIEW_TYPE_APP, (leaf) => new GymMDView(leaf, this));
 
@@ -37,6 +43,11 @@ export default class GymMDPlugin extends Plugin {
 			// eslint-disable-next-line obsidianmd/ui/sentence-case -- "GymMD" is a brand name
 			name: 'Open GymMD',
 			callback: () => void this.openApp(),
+		});
+		this.addCommand({
+			id: 'open-body-weight',
+			name: 'Track body weight',
+			callback: () => void this.openApp('bodyweight'),
 		});
 
 		this.addSettingTab(new GymMDSettingTab(this.app, this));
@@ -54,9 +65,16 @@ export default class GymMDPlugin extends Plugin {
 		await this.saveData(this.settings);
 	}
 
-	/** Reveal the GymMD app view, opening it if it isn't already present. */
-	async openApp(): Promise<void> {
+	/**
+	 * Reveal the GymMD app view, opening it if needed. If a `route` is given,
+	 * the view is (re)opened fresh at that screen.
+	 */
+	async openApp(route?: Route): Promise<void> {
 		const { workspace } = this.app;
+		if (route) {
+			this.pendingRoute = route;
+			workspace.detachLeavesOfType(VIEW_TYPE_APP);
+		}
 		let leaf = workspace.getLeavesOfType(VIEW_TYPE_APP)[0];
 		if (!leaf) {
 			leaf = workspace.getLeaf(true);

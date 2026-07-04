@@ -40,13 +40,15 @@ src/
     navigation.ts      # Route type + NavContext + useNav() (in-view router)
     views/             # app-view.tsx = the single ItemView + <App> router;
                        #   home/exercise-list/template-list/history/active-workout/
-                       #   reports are plain React screen components rendered by it
+                       #   reports/body-weight are plain React screens rendered by it
     components/        # NumberField (inline validated input, template editor),
                        #   NumberCell (tap-to-open number popup, active workout)
-    modals/            # React modal base, prompts, template editor, finish flow
+    modals/            # React modal base, prompts, template editor, finish flow,
+                       #   body-weight editor
     hooks/             # useActiveWorkout (autosave), useNow (ticking clock),
                        #   useWakeLock (keep screen awake during a workout)
-  services/            # Vault I/O, serializer/parser, stores, summary, diff, report
+  services/            # Vault I/O, serializer/parser, stores, summary, diff,
+                       #   report, body-weight-store (conflict-checked writes)
   utils/               # ID generation, date helpers, constants
 manifest.json          # Plugin metadata — never change `id` after release
 versions.json          # Maps plugin version → minimum Obsidian app version

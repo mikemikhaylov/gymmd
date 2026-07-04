@@ -2,22 +2,16 @@ import { type App, PluginSettingTab, Setting } from 'obsidian';
 import type GymMDPlugin from './main';
 
 export interface GymMDSettings {
-	/** Base folder under the vault root that holds all GymMD data. */
-	basePath: string;
-	exercisesFolder: string;
-	templatesFolder: string;
-	activeFolder: string;
-	completedFolder: string;
-	reportsFolder: string;
+	/**
+	 * Root folder (relative to the vault) that holds all GymMD data:
+	 * `<root>/workouts/…` and `<root>/body_weight.md`. Empty = vault root.
+	 * The folder structure below the root is fixed (not configurable).
+	 */
+	rootPath: string;
 }
 
 export const DEFAULT_SETTINGS: GymMDSettings = {
-	basePath: 'workouts',
-	exercisesFolder: 'exercises',
-	templatesFolder: 'templates',
-	activeFolder: 'active',
-	completedFolder: 'completed',
-	reportsFolder: 'reports',
+	rootPath: '',
 };
 
 export class GymMDSettingTab extends PluginSettingTab {
@@ -33,38 +27,18 @@ export class GymMDSettingTab extends PluginSettingTab {
 		containerEl.empty();
 
 		new Setting(containerEl)
-			.setName('Base folder')
-			.setDesc('Vault folder that contains all workout data.')
+			.setName('Data folder')
+			.setDesc(
+				'Root folder for all workout and body-weight data. Leave empty for the vault root.',
+			)
 			.addText((text) =>
 				text
-					// Folder names are intentionally lowercase, not sentence-case prose.
-					// eslint-disable-next-line obsidianmd/ui/sentence-case
-					.setPlaceholder('workouts')
-					.setValue(this.plugin.settings.basePath)
+					.setPlaceholder('Fitness')
+					.setValue(this.plugin.settings.rootPath)
 					.onChange(async (value) => {
-						this.plugin.settings.basePath = value.trim() || 'workouts';
+						this.plugin.settings.rootPath = value.trim();
 						await this.plugin.saveSettings();
 					}),
 			);
-
-		const subFolders: Array<[keyof GymMDSettings, string, string]> = [
-			['exercisesFolder', 'Exercises sub-folder', 'exercises'],
-			['templatesFolder', 'Templates sub-folder', 'templates'],
-			['activeFolder', 'Active sub-folder', 'active'],
-			['completedFolder', 'Completed sub-folder', 'completed'],
-			['reportsFolder', 'Reports sub-folder', 'reports'],
-		];
-
-		for (const [key, name, fallback] of subFolders) {
-			new Setting(containerEl).setName(name).addText((text) =>
-				text
-					.setPlaceholder(fallback)
-					.setValue(this.plugin.settings[key])
-					.onChange(async (value) => {
-						this.plugin.settings[key] = value.trim() || fallback;
-						await this.plugin.saveSettings();
-					}),
-			);
-		}
 	}
 }

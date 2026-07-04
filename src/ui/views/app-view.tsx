@@ -8,6 +8,7 @@ import { TemplateList } from './template-list-view';
 import { History } from './history-view';
 import { ActiveWorkout } from './active-workout-view';
 import { Reports } from './reports-view';
+import { BodyWeight } from './body-weight-view';
 
 const TITLES: Record<Route, string> = {
 	home: 'GymMD',
@@ -16,6 +17,7 @@ const TITLES: Record<Route, string> = {
 	history: 'History',
 	active: 'Active workout',
 	reports: 'Reports',
+	bodyweight: 'Body weight',
 };
 
 function Screen({ route }: { route: Route }): ReactElement {
@@ -30,14 +32,18 @@ function Screen({ route }: { route: Route }): ReactElement {
 			return <ActiveWorkout />;
 		case 'reports':
 			return <Reports />;
+		case 'bodyweight':
+			return <BodyWeight />;
 		case 'home':
 		default:
 			return <Home />;
 	}
 }
 
-function App(): ReactElement {
-	const [stack, setStack] = useState<Route[]>(['home']);
+function App({ initialRoute }: { initialRoute: Route | null }): ReactElement {
+	const [stack, setStack] = useState<Route[]>(() =>
+		initialRoute && initialRoute !== 'home' ? ['home', initialRoute] : ['home'],
+	);
 	const route = stack[stack.length - 1];
 
 	const nav: NavApi = {
@@ -80,6 +86,8 @@ export class GymMDView extends ReactItemView {
 	}
 
 	protected renderContent(): ReactElement {
-		return <App />;
+		const initialRoute = this.plugin.pendingRoute;
+		this.plugin.pendingRoute = null;
+		return <App initialRoute={initialRoute} />;
 	}
 }

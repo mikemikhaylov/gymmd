@@ -26,7 +26,7 @@ Templates and Workouts are **separate files**, not one object with a status fiel
 ## 2. File layout
 
 ```
-VaultRoot/
+<root>/                               ← single configurable "Data folder" setting (default = vault root)
   workouts/
     exercises/
       Squat.md
@@ -42,11 +42,10 @@ VaultRoot/
       2026-06-15 Leg Day.md
     reports/
       2026-06-27 Report.md            ← generated progress reports
+  body_weight.md                      ← body-weight log (all measurements)
 ```
 
-- Folder names default to lowercase (`workouts/exercises/…`); all configurable in settings. File names keep their natural casing (`Push Day.md`).
-
-- Base path and sub-folder names configurable in plugin settings; structure above is the default.
+- **Only the root (`<root>`) is configurable** — a single "Data folder" setting (default empty = vault root). Everything below it (`workouts/`, the sub-folders, `body_weight.md`) is a **fixed** structure. File names keep their natural casing (`Push Day.md`).
 - Workout filenames: `YYYY-MM-DD <Template Name>.md`, with `-2`, `-3` suffix for multiple sessions same day.
 - One file = one whole workout/template, all exercises and sets nested inside.
 
@@ -360,6 +359,16 @@ It's pure data (no advice text) so the coach interprets it. Generation is a pure
 
 ---
 
+## 9a. Body weight tracking
+
+A **Body weight** screen (Home button + "Track body weight" command) logs body-weight measurements to a single machine-readable file, `<root>/body_weight.md`.
+
+- **File**: frontmatter is the source of truth — `type: body-weight-log` + a `measurements` array of `{ id, weight (kg), at (ISO datetime) }`, newest first; the body is a generated `Date | Time | Weight` table. Same "frontmatter = truth, body = view" model as workouts (§11).
+- **Screen**: lists measurements newest-first; **Add** logs a new one (pre-filled with the latest weight + now). Each row has **Edit** (popup for weight + date/time; weight validated ≥0, ≤2 decimals) and **Delete** (with confirmation). The file is created on first open if missing.
+- **Concurrency guard**: before every write, the store re-reads the file and compares it to the content it last loaded/wrote. If they differ (edited elsewhere / synced), it **aborts the write, reloads, and notifies** instead of clobbering — so a sync race can't lose data.
+
+---
+
 ## 10. Build order
 
 1. **Frontmatter serializer + body renderer** — the shared core both Template and Workout files depend on. Reads structured data from frontmatter (via `metadataCache` or by parsing the YAML block), and serializes data → YAML frontmatter + regenerated body tables. Because frontmatter is the only source of truth (§11), there is **no table-parsing path** — the body is write-only output. Get the round-trip (data → file → data, reading only frontmatter) solid first, with unit tests on the type schema and table rendering (blank cells, `weight: 0` → "BW", missing/null actuals).
@@ -369,7 +378,7 @@ It's pure data (no advice text) so the coach interprets it. Generation is a pure
 5. **Active Workout view** — Tab 1 (stopwatch) and Tab 2 (all sets), timestamp-based timer, autosave on every mutation.
 6. **Finish flow** — diff against template, confirmation modal, file move to `completed/`.
 7. **History view** — list of completed workouts (tap a row to open the note); each row has a **Copy** button that copies the whole workout markdown file to the clipboard.
-8. **Settings** — configurable folder paths (base path + `exercises/`, `templates/`, `active/`, `completed/` sub-folder names).
+8. **Settings** — a single **Data folder** (root) setting; the structure beneath it is fixed.
 9. *(Later)* Exercise progress view / DataviewJS examples, bodyweight tracking, AI-coach-facing export helpers.
 
 ---
