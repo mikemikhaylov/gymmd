@@ -9,6 +9,9 @@ const ACTIVE_DIR = 'active';
 const COMPLETED_DIR = 'completed';
 const REPORTS_DIR = 'reports';
 const BODY_WEIGHT_FILE = 'body_weight.md';
+const JOURNAL_DIR = 'journal';
+const JOURNAL_DAYS_DIR = 'days';
+const JOURNAL_ITEMS_FILE = 'items.md';
 
 export interface GymMDPaths {
 	base: string;
@@ -18,6 +21,8 @@ export interface GymMDPaths {
 	completed: string;
 	reports: string;
 	bodyWeightFile: string;
+	journalDays: string;
+	journalItemsFile: string;
 }
 
 function join(...parts: string[]): string {
@@ -27,6 +32,7 @@ function join(...parts: string[]): string {
 export function resolvePaths(s: GymMDSettings): GymMDPaths {
 	const root = s.rootPath.trim();
 	const base = join(root, WORKOUTS_DIR);
+	const journal = join(root, JOURNAL_DIR);
 	return {
 		base,
 		exercises: join(base, EXERCISES_DIR),
@@ -35,6 +41,8 @@ export function resolvePaths(s: GymMDSettings): GymMDPaths {
 		completed: join(base, COMPLETED_DIR),
 		reports: join(base, REPORTS_DIR),
 		bodyWeightFile: join(root, BODY_WEIGHT_FILE),
+		journalDays: join(journal, JOURNAL_DAYS_DIR),
+		journalItemsFile: join(journal, JOURNAL_ITEMS_FILE),
 	};
 }
 

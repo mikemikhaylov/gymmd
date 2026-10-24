@@ -5,6 +5,7 @@ import { TemplateStore, type TemplateEntry } from './services/template-store';
 import { WorkoutStore } from './services/workout-store';
 import { ReportStore } from './services/report-store';
 import { BodyWeightStore } from './services/body-weight-store';
+import { JournalStore } from './services/journal-store';
 import { resolvePaths, ensureFolders } from './services/paths';
 import { VIEW_TYPE_APP } from './utils/constants';
 import { GymMDView } from './ui/views/app-view';
@@ -18,6 +19,7 @@ export default class GymMDPlugin extends Plugin {
 	workouts!: WorkoutStore;
 	reports!: ReportStore;
 	bodyWeight!: BodyWeightStore;
+	journal!: JournalStore;
 	/** Deep-link target read by the app view when it mounts. */
 	pendingRoute: Route | null = null;
 
@@ -30,6 +32,7 @@ export default class GymMDPlugin extends Plugin {
 		this.workouts = new WorkoutStore(this.app, getSettings);
 		this.reports = new ReportStore(this.app, getSettings);
 		this.bodyWeight = new BodyWeightStore(this.app, getSettings);
+		this.journal = new JournalStore(this.app, getSettings);
 
 		this.registerView(VIEW_TYPE_APP, (leaf) => new GymMDView(leaf, this));
 
@@ -48,6 +51,11 @@ export default class GymMDPlugin extends Plugin {
 			id: 'open-body-weight',
 			name: 'Track body weight',
 			callback: () => void this.openApp('bodyweight'),
+		});
+		this.addCommand({
+			id: 'open-journal',
+			name: 'Open journal',
+			callback: () => void this.openApp('journal'),
 		});
 
 		this.addSettingTab(new GymMDSettingTab(this.app, this));

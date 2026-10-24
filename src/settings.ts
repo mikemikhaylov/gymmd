@@ -4,7 +4,7 @@ import type GymMDPlugin from './main';
 export interface GymMDSettings {
 	/**
 	 * Root folder (relative to the vault) that holds all GymMD data:
-	 * `<root>/workouts/…` and `<root>/body_weight.md`. Empty = vault root.
+	 * `<root>/workouts/…`, `<root>/journal/…` and `<root>/body_weight.md`. Empty = vault root.
 	 * The folder structure below the root is fixed (not configurable).
 	 */
 	rootPath: string;
@@ -29,7 +29,7 @@ export class GymMDSettingTab extends PluginSettingTab {
 		new Setting(containerEl)
 			.setName('Data folder')
 			.setDesc(
-				'Root folder for all workout and body-weight data. Leave empty for the vault root.',
+				'Root folder for all workout, body-weight and journal data. Leave empty for the vault root.',
 			)
 			.addText((text) =>
 				text

@@ -6,6 +6,8 @@ export const TYPE_EXERCISE = 'workout-exercise';
 export const TYPE_TEMPLATE = 'workout-template';
 export const TYPE_WORKOUT = 'workout';
 export const TYPE_BODY_WEIGHT_LOG = 'body-weight-log';
+export const TYPE_JOURNAL = 'journal';
+export const TYPE_JOURNAL_ITEMS = 'journal-items';
 
 /** Autosave debounce for the active workout (ms). */
 export const AUTOSAVE_DEBOUNCE_MS = 400;

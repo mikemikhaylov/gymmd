@@ -38,3 +38,7 @@ export function entryUid(): string {
 export function bodyWeightId(): string {
 	return `bw-${randomSuffix(6)}`;
 }
+
+export function journalItemId(): string {
+	return `ji-${randomSuffix(6)}`;
+}

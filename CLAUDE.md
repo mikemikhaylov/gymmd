@@ -40,15 +40,16 @@ src/
     navigation.ts      # Route type + NavContext + useNav() (in-view router)
     views/             # app-view.tsx = the single ItemView + <App> router;
                        #   home/exercise-list/template-list/history/active-workout/
-                       #   reports/body-weight are plain React screens rendered by it
+                       #   reports/body-weight/journal/journal-items are plain React screens rendered by it
     components/        # NumberField (inline validated input, template editor),
                        #   NumberCell (tap-to-open number popup, active workout)
     modals/            # React modal base, prompts, template editor, finish flow,
-                       #   body-weight editor
+                       #   body-weight editor, journal-item editor
     hooks/             # useActiveWorkout (autosave), useNow (ticking clock),
                        #   useWakeLock (keep screen awake during a workout)
   services/            # Vault I/O, serializer/parser, stores, summary, diff,
-                       #   report, body-weight-store (conflict-checked writes)
+                       #   report, body-weight-store + journal-store (conflict-checked
+                       #   writes), journal (pure item/answer/time logic)
   utils/               # ID generation, date helpers, constants
 manifest.json          # Plugin metadata — never change `id` after release
 versions.json          # Maps plugin version → minimum Obsidian app version
@@ -74,6 +75,8 @@ Three entity types, each a separate markdown file with structured frontmatter:
 | Exercise | `workouts/exercises/` | `exercise_id` (e.g. `ex-3f9a2b`) |
 | Template | `workouts/templates/` | `template_id` (e.g. `tpl-7c1d`) |
 | Workout | `workouts/active/` or `workouts/completed/` | `workout_id` (e.g. `wkt-a91f3`) |
+| Journal item | `journal/items.md` (one file, all items) | `item_id` (`caffeine`, or `ji-xxxxxx`) |
+| Journal day | `journal/days/YYYY-MM-DD.md` | the date |
 
 IDs are stable short strings — entities reference each other by ID, never by filename, so renames never break links. Exercises are archived (not deleted) to keep historical data intact.
 
@@ -98,6 +101,8 @@ All build-order steps from PLAN.md §10 are implemented (v0.1.0):
 6. ✅ Finish flow (`ui/modals/finish-flow.ts`, `services/diff.ts`)
 7. ✅ History view (`ui/views/history-view.tsx`)
 8. ✅ Settings (`settings.ts`)
+
+Also implemented: Journal (PLAN.md §9b) — daily yes/no items with enable/disable, custom items, repeatable (multiple-per-day) items, copy-from-previous-day.
 
 Not yet done: unit tests (the serializer/diff are pure and the obvious first targets); manual testing inside an Obsidian vault.
 
