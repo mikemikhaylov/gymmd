@@ -7,9 +7,10 @@ import { useNav } from '../navigation';
 import { useActiveWorkout, type ActiveWorkoutController } from '../hooks/use-active-workout';
 import { useNow } from '../hooks/use-now';
 import { useWakeLock } from '../hooks/use-wake-lock';
-import { confirm } from '../modals/prompts';
+import { chooseAction, confirm } from '../modals/prompts';
 import { runFinishFlow } from '../modals/finish-flow';
 import { NumberCell } from '../components/number-cell';
+import { NavActions } from '../components/nav-actions';
 
 interface Ref {
 	e: number;
@@ -181,6 +182,21 @@ function AllSetsTab({
 			[sets[s], sets[j]] = [sets[j], sets[s]];
 		});
 
+	/** Per-set actions live in one menu so the set table fits a phone screen. */
+	const setMenu = async (e: number, s: number, count: number) => {
+		const choice = await chooseAction(plugin.app, {
+			title: `Set ${s + 1}`,
+			actions: [
+				...(s > 0 ? [{ id: 'up', label: 'Move up' }] : []),
+				...(s < count - 1 ? [{ id: 'down', label: 'Move down' }] : []),
+				{ id: 'delete', label: 'Delete', danger: true },
+			],
+		});
+		if (choice === 'up') moveSet(e, s, -1);
+		else if (choice === 'down') moveSet(e, s, 1);
+		else if (choice === 'delete') await removeSet(e, s);
+	};
+
 	const moveExercise = (e: number, delta: number) =>
 		ctrl.mutate((w) => {
 			const j = e + delta;
@@ -195,10 +211,17 @@ function AllSetsTab({
 					<div className="gymmd-exercise-head">
 						<strong>{ex.name}</strong>
 						<span className="gymmd-row-actions">
-							<button onClick={() => moveExercise(e, -1)} disabled={e === 0}>
+							<button
+								className="clickable-icon"
+								aria-label="Move exercise up"
+								onClick={() => moveExercise(e, -1)}
+								disabled={e === 0}
+							>
 								↑
 							</button>
 							<button
+								className="clickable-icon"
+								aria-label="Move exercise down"
 								onClick={() => moveExercise(e, 1)}
 								disabled={e === workout.exercises.length - 1}
 							>
@@ -213,7 +236,7 @@ function AllSetsTab({
 								<th>Set</th>
 								<th>Reps</th>
 								<th>Weight</th>
-								<th>Status</th>
+								<th></th>
 								<th></th>
 							</tr>
 						</thead>
@@ -239,23 +262,32 @@ function AllSetsTab({
 										</td>
 										<td>
 											{s.done ? (
-												<button onClick={() => undoSet(e, si)}>✓ Done · undo</button>
+												<button
+													className="gymmd-set-status gymmd-set-done"
+													aria-label="Done — tap to undo"
+													onClick={() => undoSet(e, si)}
+												>
+													✓
+												</button>
 											) : active ? (
-												<span className="gymmd-inprogress">● active</span>
+												<span className="gymmd-inprogress">● live</span>
 											) : (
-												<button className="mod-cta" onClick={() => startSetAt({ e, s: si })}>
+												<button
+													className="gymmd-set-status mod-cta"
+													onClick={() => startSetAt({ e, s: si })}
+												>
 													Start
 												</button>
 											)}
 										</td>
-										<td className="gymmd-row-actions">
-											<button onClick={() => moveSet(e, si, -1)} disabled={si === 0}>
-												↑
+										<td>
+											<button
+												className="clickable-icon gymmd-set-menu"
+												aria-label="Set actions"
+												onClick={() => void setMenu(e, si, ex.sets.length)}
+											>
+												⋯
 											</button>
-											<button onClick={() => moveSet(e, si, 1)} disabled={si === ex.sets.length - 1}>
-												↓
-											</button>
-											<button onClick={() => void removeSet(e, si)}>✕</button>
 										</td>
 									</tr>
 								);
@@ -365,12 +397,12 @@ export function ActiveWorkout(): ReactElement {
 
 	return (
 		<div className="gymmd-view gymmd-active" style={{ background: restBackground }}>
-			<div className="gymmd-header">
-				<h2>{ctrl.title}</h2>
+			<NavActions>
 				<button className="mod-cta" onClick={() => void onFinish()}>
 					Finish
 				</button>
-			</div>
+			</NavActions>
+			<div className="gymmd-view-subtitle">{ctrl.title}</div>
 
 			<div className="gymmd-tabs">
 				<button

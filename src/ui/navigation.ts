@@ -17,6 +17,8 @@ export interface NavApi {
 	back: () => void;
 	home: () => void;
 	canGoBack: boolean;
+	/** Right-hand slot of the navbar; screens portal their actions into it (see NavActions). */
+	actionsEl: HTMLElement | null;
 }
 
 export const NavContext = createContext<NavApi | null>(null);

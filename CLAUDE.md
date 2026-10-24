@@ -20,6 +20,10 @@ npm run lint       # ESLint with eslint-plugin-obsidianmd rules
 npm run version    # bump version in manifest.json + versions.json
 ```
 
+To check the UI without Obsidian (phone layout, real Obsidian CSS): `npm run preview:shoot`
+renders every screen with Playwright into `dev/preview/out/` and flags overflow/errors — see
+`dev/preview/README.md`. Look at the screenshots after any UI change.
+
 To test in Obsidian: copy (or symlink) the repo into:
 ```
 <Vault>/.obsidian/plugins/gymmd/
@@ -87,6 +91,9 @@ Core invariants (see PLAN.md §11):
 - **Every workout starts from a template** — there is no "from scratch" creation. To add an exercise, edit a template first.
 - **Workout `status` drives folder placement** — `in_progress` → `active/`, `completed` → `completed/`, moved via `fileManager.renameFile()`. No abandon flow; discard = delete the file.
 - **Timestamps are quoted ISO-8601 strings**; timer state derives from the stored `current_phase_started`, never a running interval.
+- **Mobile-first UI**: screen actions go in the navbar via `<NavActions>` (no in-screen headings);
+  Obsidian styles buttons with `button:not(.clickable-icon)` + a `--text-color` var, so state
+  overrides (e.g. `.gymmd-tab-active`) need `.gymmd-app button.…` specificity and must set the var.
 - **UI is styled with Obsidian CSS variables** (`var(--interactive-accent)`, `var(--background-secondary)`, `var(--text-muted)`, `var(--size-4-*)`, `var(--radius-*)`, …) so it follows the user's theme. No hardcoded colors / no forced dark mode.
 
 ## Implementation status

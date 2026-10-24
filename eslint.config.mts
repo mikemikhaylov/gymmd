@@ -14,6 +14,8 @@ export default tseslint.config(
 		'package.json',
 		'package-lock.json',
 		'tsconfig.json',
+		// Browser preview harness (dev tool, not part of the plugin).
+		'dev',
 	]),
 	{
 		languageOptions: {

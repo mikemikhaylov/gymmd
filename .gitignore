@@ -145,3 +145,8 @@ vite.config.ts.timestamp-*
 
 # Obsidian plugin build artifact
 main.js
+
+# Browser preview build output + Obsidian CSS extracted from the local install
+dev/preview/vendor/
+dev/preview/dist/
+dev/preview/out/

@@ -2,6 +2,7 @@ import { type ReactElement, useCallback, useEffect, useState } from 'react';
 import type { ExerciseEntry } from '../../services/exercise-store';
 import { usePlugin } from '../context';
 import { promptText, confirm } from '../modals/prompts';
+import { NavActions } from '../components/nav-actions';
 
 export function ExerciseList(): ReactElement {
 	const plugin = usePlugin();
@@ -58,12 +59,11 @@ export function ExerciseList(): ReactElement {
 
 	return (
 		<div className="gymmd-view">
-			<div className="gymmd-header">
-				<h2>Exercises</h2>
+			<NavActions>
 				<button className="mod-cta" onClick={() => void onAdd()}>
-					Add exercise
+					Add
 				</button>
-			</div>
+			</NavActions>
 
 			<label className="gymmd-checkbox">
 				<input

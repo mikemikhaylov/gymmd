@@ -7,9 +7,10 @@ import { usePlugin } from '../context';
 import { confirm } from '../modals/prompts';
 import { openReactModal } from '../modals/react-modal';
 import { BodyWeightEditor } from '../modals/body-weight-editor';
+import { NavActions } from '../components/nav-actions';
 
 function formatWhen(at: string): string {
-	return `${at.slice(0, 10)} ${at.slice(11, 19)}`;
+	return `${at.slice(0, 10)} ${at.slice(11, 16)}`;
 }
 
 export function BodyWeight(): ReactElement {
@@ -45,11 +46,18 @@ export function BodyWeight(): ReactElement {
 		title: string,
 		initial: { weight: number | null; at: string },
 		onSave: (weight: number, at: string) => void,
+		onDelete?: () => void,
 	) => {
 		openReactModal(
 			plugin,
 			(close) => (
-				<BodyWeightEditor title={title} initial={initial} onSave={onSave} close={close} />
+				<BodyWeightEditor
+					title={title}
+					initial={initial}
+					onSave={onSave}
+					onDelete={onDelete}
+					close={close}
+				/>
 			),
 			{ title },
 		);
@@ -64,9 +72,14 @@ export function BodyWeight(): ReactElement {
 	};
 
 	const onEdit = (m: BodyWeightMeasurement) => {
-		openEditor('Edit measurement', { weight: m.weight, at: m.at }, (weight, at) => {
-			void persist(measurements.map((x) => (x.id === m.id ? { ...x, weight, at } : x)));
-		});
+		openEditor(
+			'Edit measurement',
+			{ weight: m.weight, at: m.at },
+			(weight, at) => {
+				void persist(measurements.map((x) => (x.id === m.id ? { ...x, weight, at } : x)));
+			},
+			() => void onDelete(m),
+		);
 	};
 
 	const onDelete = async (m: BodyWeightMeasurement) => {
@@ -82,12 +95,11 @@ export function BodyWeight(): ReactElement {
 
 	return (
 		<div className="gymmd-view">
-			<div className="gymmd-header">
-				<h2>Body weight</h2>
+			<NavActions>
 				<button className="mod-cta" onClick={onAdd}>
 					Add
 				</button>
-			</div>
+			</NavActions>
 
 			{loading ? (
 				<p>Loading…</p>
@@ -97,14 +109,10 @@ export function BodyWeight(): ReactElement {
 				<ul className="gymmd-list">
 					{measurements.map((m) => (
 						<li key={m.id} className="gymmd-list-row">
-							<span>
-								<strong>{m.weight} kg</strong>
-								<span className="gymmd-muted"> · {formatWhen(m.at)}</span>
-							</span>
-							<span className="gymmd-row-actions">
-								<button onClick={() => onEdit(m)}>Edit</button>
-								<button onClick={() => void onDelete(m)}>Delete</button>
-							</span>
+							<button className="gymmd-row-main gymmd-row-inline" onClick={() => onEdit(m)}>
+								<span className="gymmd-row-title">{m.weight} kg</span>
+								<span className="gymmd-muted">{formatWhen(m.at)}</span>
+							</button>
 						</li>
 					))}
 				</ul>

@@ -20,6 +20,7 @@ import { usePlugin } from '../context';
 import { useNav } from '../navigation';
 import { NumberField } from '../components/number-field';
 import { confirm } from '../modals/prompts';
+import { NavActions } from '../components/nav-actions';
 
 function emptyDay(date: ISODate): JournalDay {
 	return { type: TYPE_JOURNAL, date, updated: null, entries: [] };
@@ -33,6 +34,13 @@ function formatDate(date: ISODate): string {
 		month: 'short',
 		day: 'numeric',
 	});
+}
+
+/** "Today", "Yesterday", or the weekday + date. */
+function relativeDay(date: ISODate, today: ISODate): string {
+	if (date === today) return 'Today';
+	if (date === addDays(today, -1)) return 'Yesterday';
+	return formatDate(date);
 }
 
 function TimeInput({
@@ -141,7 +149,7 @@ function AnswerFields({
 				</label>
 			)}
 			{has('dosage') && (
-				<label>
+				<label className="gymmd-journal-wide">
 					<span>{FIELD_LABELS.dosage}</span>
 					<span className="gymmd-journal-dosage">
 						<NumberField
@@ -262,7 +270,7 @@ function JournalCard({ item, answers, date, prev, onChange }: CardProps): ReactE
 
 			{prev && (
 				<button
-					className="gymmd-journal-copy gymmd-link"
+					className="gymmd-text-button gymmd-journal-copy"
 					onClick={() => onChange(prev.answers.map((a) => copyAnswer(a, prev.date, date, item)))}
 				>
 					↺ Same as {formatDate(prev.date)}: {prevLabel}
@@ -277,7 +285,7 @@ function JournalCard({ item, answers, date, prev, onChange }: CardProps): ReactE
 						{answers.length > 1 && (
 							<div className="gymmd-journal-occurrence-head">
 								<span className="gymmd-muted">#{i + 1}</span>
-								<button className="gymmd-link gymmd-journal-copy" onClick={() => removeAt(i)}>
+								<button className="gymmd-text-button gymmd-text-danger" onClick={() => removeAt(i)}>
 									Remove
 								</button>
 							</div>
@@ -289,7 +297,7 @@ function JournalCard({ item, answers, date, prev, onChange }: CardProps): ReactE
 				))}
 
 			{status === true && item.repeatable && (
-				<button className="gymmd-journal-add" onClick={() => onChange([...answers, emptyAnswer(item, true)])}>
+				<button className="gymmd-text-button gymmd-journal-add" onClick={() => onChange([...answers, emptyAnswer(item, true)])}>
 					+ Add another
 				</button>
 			)}
@@ -406,29 +414,39 @@ export function Journal(): ReactElement {
 
 	return (
 		<div className="gymmd-view gymmd-journal">
-			<div className="gymmd-header">
-				<h2>Journal</h2>
-				<button onClick={() => nav.navigate('journal-items')}>Manage items</button>
-			</div>
+			<NavActions>
+				<button onClick={() => nav.navigate('journal-items')}>Manage</button>
+			</NavActions>
 
 			<div className="gymmd-journal-datebar">
-				<button aria-label="Previous day" onClick={() => setDate(addDays(date, -1))}>
+				<button
+					className="clickable-icon"
+					aria-label="Previous day"
+					onClick={() => setDate(addDays(date, -1))}
+				>
 					‹
 				</button>
-				<input
-					type="date"
-					value={date}
-					max={today}
-					onChange={(e) => e.target.value && setDate(e.target.value)}
-				/>
+				{/* The label is the visible date; a transparent native picker sits on top of it. */}
+				<label className="gymmd-journal-date">
+					<span className="gymmd-journal-date-main">{relativeDay(date, today)}</span>
+					<span className="gymmd-muted">{formatDate(date)}</span>
+					<input
+						type="date"
+						aria-label="Pick a date"
+						value={date}
+						max={today}
+						onClick={(e) => e.currentTarget.showPicker?.()}
+						onChange={(e) => e.target.value && setDate(e.target.value)}
+					/>
+				</label>
 				<button
+					className="clickable-icon"
 					aria-label="Next day"
 					disabled={date >= today}
 					onClick={() => setDate(addDays(date, 1))}
 				>
 					›
 				</button>
-				{date !== today && <button onClick={() => setDate(today)}>Today</button>}
 			</div>
 
 			{!items || !day ? (
@@ -439,11 +457,17 @@ export function Journal(): ReactElement {
 				<>
 					<div className="gymmd-journal-summary">
 						<span className="gymmd-muted">
-							{formatDate(date)} · {answeredCount} of {enabled.length} answered
+							{answeredCount} of {enabled.length} answered
 						</span>
+						{date !== today && (
+							<button className="gymmd-text-button" onClick={() => setDate(today)}>
+								Go to today
+							</button>
+						)}
 						{prev && fillable.length > 0 && (
-							<button onClick={fillFromPrevious}>
-								Fill {fillable.length} from {formatDate(prev.date)}
+							<button className="gymmd-text-button" onClick={fillFromPrevious}>
+								↺ Fill {fillable.length} from{' '}
+								{prev.date === addDays(today, -1) ? 'yesterday' : formatDate(prev.date)}
 							</button>
 						)}
 					</div>

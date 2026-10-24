@@ -3,6 +3,7 @@ import { type ReactElement, useCallback, useEffect, useMemo, useState } from 're
 import { todayISODate, nowISODateTime } from '../../utils/date';
 import { buildReportMarkdown, type ReportEntry } from '../../services/report';
 import { usePlugin } from '../context';
+import { NavActions } from '../components/nav-actions';
 
 type Range = 'all' | '30d' | '90d' | '365d';
 
@@ -100,8 +101,7 @@ export function Reports(): ReactElement {
 
 	return (
 		<div className="gymmd-view">
-			<div className="gymmd-header">
-				<h2>Reports</h2>
+			<NavActions>
 				<button
 					className="mod-cta"
 					disabled={busy || entries.length === 0}
@@ -109,7 +109,7 @@ export function Reports(): ReactElement {
 				>
 					Generate
 				</button>
-			</div>
+			</NavActions>
 
 			{entries.length === 0 ? (
 				<p className="gymmd-empty">No completed workouts yet — finish a workout first.</p>

@@ -7,10 +7,12 @@ interface Props {
 	initial: JournalItem;
 	isNew: boolean;
 	onSave: (item: JournalItem) => void;
+	/** Offered for existing custom items; built-ins can only be disabled. */
+	onDelete?: () => void;
 	close: () => void;
 }
 
-export function JournalItemEditor({ initial, isNew, onSave, close }: Props): ReactElement {
+export function JournalItemEditor({ initial, isNew, onSave, onDelete, close }: Props): ReactElement {
 	const [item, setItem] = useState<JournalItem>(() => structuredClone(initial));
 	const update = (patch: Partial<JournalItem>) => setItem((prev) => ({ ...prev, ...patch }));
 
@@ -73,20 +75,22 @@ export function JournalItemEditor({ initial, isNew, onSave, close }: Props): Rea
 
 			<div className="gymmd-bw-field">
 				<span>When answered “yes”, also ask for</span>
-				{FIELD_ORDER.map((f) => (
-					<label key={f} className="gymmd-checkbox">
-						<input
-							type="checkbox"
-							checked={item.fields.includes(f)}
-							onChange={(e) => toggleField(f, e.target.checked)}
-						/>
-						{f === 'count' ? 'Portions (count)' : FIELD_LABELS[f]}
-					</label>
-				))}
+				<div className="gymmd-journal-fieldlist">
+					{FIELD_ORDER.map((f) => (
+						<label key={f} className="gymmd-checkbox">
+							<input
+								type="checkbox"
+								checked={item.fields.includes(f)}
+								onChange={(e) => toggleField(f, e.target.checked)}
+							/>
+							{f === 'count' ? 'Portions' : FIELD_LABELS[f]}
+						</label>
+					))}
+				</div>
 				{item.fields.length === 0 && <span className="gymmd-muted">Nothing — a plain yes / no.</span>}
 			</div>
 
-			<label className="gymmd-checkbox gymmd-bw-field">
+			<label className="gymmd-checkbox gymmd-journal-repeatable">
 				<input
 					type="checkbox"
 					checked={item.repeatable}
@@ -134,6 +138,17 @@ export function JournalItemEditor({ initial, isNew, onSave, close }: Props): Rea
 					Save
 				</button>
 				<button onClick={close}>Cancel</button>
+				{onDelete && (
+					<button
+						className="mod-warning gymmd-footer-end"
+						onClick={() => {
+							close();
+							onDelete();
+						}}
+					>
+						Delete
+					</button>
+				)}
 			</div>
 		</div>
 	);

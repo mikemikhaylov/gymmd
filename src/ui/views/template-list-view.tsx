@@ -5,6 +5,7 @@ import { useNav } from '../navigation';
 import { promptText, confirm } from '../modals/prompts';
 import { openReactModal } from '../modals/react-modal';
 import { TemplateEditor } from '../modals/template-editor';
+import { NavActions } from '../components/nav-actions';
 
 export function TemplateList(): ReactElement {
 	const plugin = usePlugin();
@@ -65,12 +66,11 @@ export function TemplateList(): ReactElement {
 
 	return (
 		<div className="gymmd-view">
-			<div className="gymmd-header">
-				<h2>Templates</h2>
+			<NavActions>
 				<button className="mod-cta" onClick={() => void onCreate()}>
-					New template
+					New
 				</button>
-			</div>
+			</NavActions>
 
 			{entries.length === 0 ? (
 				<p className="gymmd-empty">No templates yet. Create one to start working out.</p>

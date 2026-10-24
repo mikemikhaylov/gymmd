@@ -17,7 +17,6 @@ export function Home(): ReactElement {
 
 	return (
 		<div className="gymmd-view gymmd-home">
-			<h1 className="gymmd-home-title">GymMD</h1>
 			<div className="gymmd-home-buttons">
 				{hasActive && (
 					<button className="mod-cta gymmd-home-button" onClick={() => nav.navigate('active')}>

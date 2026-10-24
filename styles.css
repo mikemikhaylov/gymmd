@@ -22,6 +22,32 @@
 }
 
 .gymmd-navbar-title {
+	flex: 1;
+	min-width: 0;
+	font-weight: var(--font-semibold);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.gymmd-navbar-actions {
+	display: flex;
+	gap: var(--size-4-2);
+	flex-shrink: 0;
+}
+
+.gymmd-app button.gymmd-back-button {
+	--text-color: var(--text-accent);
+	background: none;
+	box-shadow: none;
+	font-size: 1.6em;
+	line-height: 1;
+	padding: 0 var(--size-4-2);
+}
+
+.gymmd-view-subtitle {
+	text-align: center;
+	color: var(--text-muted);
 	font-weight: var(--font-semibold);
 }
 
@@ -87,6 +113,12 @@
 	display: flex;
 	align-items: center;
 	gap: var(--size-4-2);
+	white-space: nowrap;
+}
+
+/* Wrap the trailing hint under the control on narrow screens. */
+.gymmd-field {
+	flex-wrap: wrap;
 }
 
 .gymmd-field-head {
@@ -106,12 +138,8 @@
 
 /* --- Home hub --- */
 
-.gymmd-home-title {
-	text-align: center;
-	margin: var(--size-4-4) 0 var(--size-4-6);
-}
-
 .gymmd-home-buttons {
+	margin-top: var(--size-4-6);
 	display: flex;
 	flex-direction: column;
 	gap: var(--size-4-3);
@@ -135,9 +163,10 @@
 
 .gymmd-list-row {
 	display: flex;
+	flex-wrap: wrap;
 	align-items: center;
 	justify-content: space-between;
-	gap: var(--size-4-3);
+	gap: var(--size-4-2) var(--size-4-3);
 	padding: var(--size-4-2);
 	border-bottom: 1px solid var(--background-modifier-border);
 }
@@ -151,11 +180,19 @@
 	background: var(--background-modifier-hover);
 }
 
+/* On a narrow screen the label keeps the full width and the actions wrap
+   below it (right-aligned) instead of squeezing the label to a few words. */
+.gymmd-list-row > :first-child {
+	flex: 1 1 12em;
+	min-width: 0;
+}
+
 .gymmd-row-actions {
 	display: inline-flex;
 	gap: var(--size-4-2);
 	flex-shrink: 0;
 	align-items: center;
+	margin-left: auto;
 }
 
 .gymmd-archived {
@@ -232,8 +269,12 @@
 	margin-top: var(--size-4-4);
 	position: sticky;
 	bottom: 0;
-	background: var(--background-primary);
-	padding-top: var(--size-4-2);
+	background: var(--modal-background, var(--background-primary));
+	padding: var(--size-4-2) 0;
+}
+
+.gymmd-footer-end {
+	margin-left: auto;
 }
 
 /* --- Inline exercise picker --- */
@@ -283,7 +324,7 @@
 	margin-bottom: var(--size-4-3);
 }
 
-.gymmd-bw-field input {
+.gymmd-bw-field input:not([type='checkbox']) {
 	width: 100%;
 	font-size: 1.1em;
 }
@@ -300,13 +341,24 @@
 	flex: 1;
 }
 
-.gymmd-tab-active {
-	background: var(--interactive-accent);
+/* Selected state for tabs / toggles. Obsidian styles buttons via
+   `button:not(.clickable-icon)` and a --text-color variable, so this needs the
+   extra specificity (and to set the variable) to win. */
+.gymmd-app button.gymmd-tab-active,
+.modal button.gymmd-tab-active,
+.gymmd-app .gymmd-journal-yesno button.gymmd-tab-active {
+	--text-color: var(--text-on-accent);
 	color: var(--text-on-accent);
+	background-color: var(--interactive-accent);
 }
 
-.gymmd-tab-active:hover {
-	background: var(--interactive-accent-hover);
+/* Hover tint only on devices that really hover — on touch screens :hover
+   sticks after a tap and would wash out the selected state. */
+@media (hover: hover) {
+	.gymmd-app button.gymmd-tab-active:hover,
+	.gymmd-app .gymmd-journal-yesno button.gymmd-tab-active:hover {
+		background-color: var(--interactive-accent-hover);
+	}
 }
 
 /* Active view is a single scrolling container (like the template editor, which
@@ -451,26 +503,131 @@
 	padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
 }
 
+/* --- Shared small controls --- */
+
+/* Link-style button (no pill chrome) for secondary actions. */
+.gymmd-app button.gymmd-text-button,
+.modal button.gymmd-text-button {
+	--text-color: var(--text-accent);
+	background: none;
+	box-shadow: none;
+	height: auto;
+	padding: var(--size-4-1) 0;
+	border-radius: 0;
+	font-size: var(--font-ui-small);
+	text-align: left;
+	justify-content: flex-start;
+	white-space: normal;
+}
+
+.gymmd-app button.gymmd-text-danger,
+.modal button.gymmd-text-danger {
+	--text-color: var(--text-error);
+}
+
+/* Compact buttons in rows and the navbar: Obsidian mobile makes every button a
+   44px touch pill, which crowds a 390px-wide screen. */
+.gymmd-app .gymmd-navbar-actions button,
+.gymmd-app .gymmd-row-actions button:not(.clickable-icon) {
+	height: 34px;
+	padding: 0 var(--size-4-3);
+	font-size: var(--font-ui-small);
+}
+
+.gymmd-app .gymmd-journal-time button {
+	height: var(--input-height);
+	padding: 0 var(--size-4-2);
+	font-size: var(--font-ui-small);
+	flex-shrink: 0;
+}
+
+.gymmd-set-table th {
+	text-align: center;
+}
+
+.gymmd-set-table th:first-child {
+	text-align: left;
+}
+
+.gymmd-app .gymmd-row-actions .clickable-icon {
+	font-size: 1.15em;
+	padding: var(--size-4-1) var(--size-4-2);
+}
+
+/* A whole-row tap target (opens the editor). */
+.gymmd-app button.gymmd-row-main {
+	background: none;
+	box-shadow: none;
+	height: auto;
+	padding: var(--size-4-1) 0;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	justify-content: flex-start;
+	gap: 2px;
+	text-align: left;
+	white-space: normal;
+	font-size: inherit;
+}
+
+.gymmd-row-title {
+	font-weight: var(--font-semibold);
+}
+
+/* Title and meta on one line (wraps if needed). */
+.gymmd-app button.gymmd-row-inline {
+	flex-direction: row;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: var(--size-4-1) var(--size-4-2);
+	width: 100%;
+}
+
 /* --- Journal --- */
 
 .gymmd-journal-datebar {
 	display: flex;
 	align-items: center;
+	justify-content: space-between;
 	gap: var(--size-4-2);
-	margin-bottom: var(--size-4-3);
+	margin-bottom: var(--size-4-2);
 }
 
-.gymmd-journal-datebar input[type='date'] {
+.gymmd-journal-datebar .clickable-icon {
+	font-size: 1.8em;
+	line-height: 1;
+	padding: var(--size-4-1) var(--size-4-4);
+}
+
+/* Visible date label with a transparent native date picker on top of it. */
+.gymmd-journal-date {
+	position: relative;
 	flex: 1;
-	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	cursor: pointer;
+}
+
+.gymmd-journal-date-main {
+	font-size: 1.3em;
+	font-weight: var(--font-semibold);
+}
+
+.gymmd-journal-date input[type='date'] {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	opacity: 0;
+	cursor: pointer;
 }
 
 .gymmd-journal-summary {
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
 	flex-wrap: wrap;
-	gap: var(--size-4-2);
+	gap: var(--size-4-1) var(--size-4-4);
 	margin-bottom: var(--size-4-2);
 }
 
@@ -478,7 +635,7 @@
 	margin: var(--size-4-3) 0;
 	padding: var(--size-4-3);
 	border: 1px solid var(--background-modifier-border);
-	border-radius: var(--radius-m);
+	border-radius: var(--radius-l);
 	background: var(--background-secondary);
 }
 
@@ -498,32 +655,57 @@
 	font-size: 1.05em;
 }
 
+/* Yes / No segmented control. */
 .gymmd-journal-yesno {
 	display: inline-flex;
-	gap: var(--size-4-1);
 	flex-shrink: 0;
+	padding: 2px;
+	gap: 2px;
+	border-radius: var(--radius-m);
+	background: var(--background-modifier-form-field);
+	border: 1px solid var(--background-modifier-border);
 }
 
-.gymmd-journal-yesno button {
-	min-width: 56px;
+.gymmd-app .gymmd-journal-yesno button {
+	height: 34px;
+	min-width: 52px;
+	padding: 0 var(--size-4-3);
+	background: transparent;
+	box-shadow: none;
+	border-radius: calc(var(--radius-m) - 2px);
 }
 
 .gymmd-journal-copy {
-	display: block;
-	margin-top: var(--size-4-2);
-	padding: 0;
-	background: none;
-	box-shadow: none;
-	height: auto;
-	text-align: left;
-	white-space: normal;
+	margin-top: var(--size-4-1);
 }
 
 .gymmd-journal-fields {
-	display: flex;
-	flex-wrap: wrap;
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
 	gap: var(--size-4-3);
 	margin-top: var(--size-4-3);
+}
+
+/* Cards are only ~320px wide on a phone: stack the fields there so time
+   pickers (with their Now button) and numbers get the full width. */
+.gymmd-journal-card {
+	container-type: inline-size;
+}
+
+@container (max-width: 380px) {
+	.gymmd-journal-fields {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+/* Inputs on the card background: in the light theme Obsidian's form-field
+   grey matches --background-secondary, which would make them invisible. */
+.gymmd-journal-card input[type='text'],
+.gymmd-journal-card input[type='time'],
+.gymmd-journal-card select,
+.gymmd-journal-card textarea {
+	background-color: var(--background-primary);
+	border: 1px solid var(--background-modifier-border);
 }
 
 .gymmd-journal-fields > label,
@@ -531,47 +713,69 @@
 	display: flex;
 	flex-direction: column;
 	gap: var(--size-4-1);
+	min-width: 0;
 	font-size: var(--font-ui-small);
 	color: var(--text-muted);
 }
 
-.gymmd-journal-fields input[type='text'] {
-	width: 96px;
+/* Full-width rows inside the two-column field grid. */
+.gymmd-journal-fields > .gymmd-journal-wide,
+.gymmd-journal-intensity-field,
+.gymmd-journal-note {
+	grid-column: 1 / -1;
+}
+
+.gymmd-journal-fields input[type='text'],
+.gymmd-journal-fields select {
+	width: 100%;
+	min-width: 0;
 }
 
 .gymmd-journal-time,
 .gymmd-journal-dosage {
-	display: inline-flex;
-	gap: var(--size-4-1);
+	display: flex;
+	gap: var(--size-4-2);
 	align-items: center;
+	min-width: 0;
 }
 
-.gymmd-journal-intensity-field,
-.gymmd-journal-note {
-	flex-basis: 100%;
+.gymmd-journal-time input[type='time'] {
+	flex: 1;
+	min-width: 0;
+}
+
+/* Match the time picker to Obsidian's text inputs beside it (on desktop it
+   otherwise renders as a small boxed control). */
+.gymmd-journal-fields input[type='time'] {
+	height: var(--input-height);
+	padding: 0 var(--size-4-2);
+	border-radius: var(--input-radius);
+	color: var(--text-normal);
+	font-size: inherit;
+	font-variant-numeric: tabular-nums;
+}
+
+.gymmd-journal-dosage > * {
+	flex: 1;
 }
 
 .gymmd-journal-intensity {
-	display: flex;
-	flex-wrap: wrap;
-	gap: var(--size-4-1);
+	display: grid;
+	grid-template-columns: repeat(5, minmax(0, 1fr));
+	gap: var(--size-4-2);
 }
 
-.gymmd-journal-intensity button {
-	min-width: 36px;
-	padding: var(--size-4-1) var(--size-4-2);
+.gymmd-app .gymmd-journal-intensity button {
+	height: 38px;
+	padding: 0;
 	font-variant-numeric: tabular-nums;
 }
 
 .gymmd-journal-note textarea {
 	width: 100%;
+	min-height: 64px;
 	resize: vertical;
-}
-
-.gymmd-journal-chips {
-	display: flex;
-	flex-wrap: wrap;
-	gap: var(--size-4-1);
+	border-radius: var(--radius-m);
 }
 
 .gymmd-journal-occurrence {
@@ -586,10 +790,89 @@
 	justify-content: space-between;
 }
 
-.gymmd-journal-occurrence-head .gymmd-journal-copy {
-	margin-top: 0;
-}
-
 .gymmd-journal-add {
 	margin-top: var(--size-4-3);
+}
+
+/* Journal item list + editor. */
+.gymmd-journal-item-row {
+	flex-wrap: nowrap;
+}
+
+.gymmd-journal-item-row > input[type='checkbox'] {
+	flex: none;
+}
+
+.gymmd-journal-item-row > .gymmd-row-main {
+	flex: 1;
+	min-width: 0;
+}
+
+.gymmd-journal-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--size-4-2);
+}
+
+.modal .gymmd-journal-chips button {
+	height: 34px;
+	font-size: var(--font-ui-small);
+}
+
+.gymmd-journal-fieldlist {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: var(--size-4-2) var(--size-4-3);
+}
+
+.gymmd-journal-repeatable {
+	margin-bottom: var(--size-4-3);
+}
+
+/* --- All-sets table (active workout) --- */
+
+.gymmd-app .gymmd-set-table button.gymmd-set-status {
+	height: 34px;
+	min-width: 56px;
+	padding: 0 var(--size-4-2);
+	font-size: var(--font-ui-small);
+}
+
+.gymmd-app .gymmd-set-table button.gymmd-set-done {
+	--text-color: var(--color-green);
+	font-size: 1.1em;
+}
+
+.gymmd-set-menu {
+	font-size: 1.2em;
+}
+
+/* Short phones (iPhone SE): tighten the stopwatch so Start/End stays on screen. */
+@media (max-height: 700px) {
+	.gymmd-timer {
+		font-size: 2.6em;
+		margin: var(--size-4-2) 0;
+	}
+
+	.gymmd-set-indicator,
+	.gymmd-inputs {
+		margin-bottom: var(--size-4-2);
+	}
+
+}
+
+/* Plain buttons on a card/block background (--background-secondary): lift them
+   onto the primary background so they stay visible in the light theme. */
+.gymmd-journal-time button,
+.gymmd-journal-intensity button:not(.gymmd-tab-active),
+.gymmd-exercise-block .gymmd-num-cell,
+.gymmd-exercise-block button.gymmd-set-status:not(.mod-cta),
+.gymmd-exercise-block > button:not(.clickable-icon):not(.gymmd-text-button) {
+	background-color: var(--background-primary);
+	border: 1px solid var(--background-modifier-border);
+}
+
+.gymmd-exercise-block input[type='text'] {
+	background-color: var(--background-primary);
+	border: 1px solid var(--background-modifier-border);
 }

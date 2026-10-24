@@ -3,6 +3,7 @@ import { type ReactElement, useCallback, useEffect, useState } from 'react';
 import type { WorkoutEntry } from '../../services/workout-store';
 import type { Workout } from '../../types';
 import { usePlugin } from '../context';
+import { NavActions } from '../components/nav-actions';
 
 /** Derive display stats from a workout (nothing summary-like is stored anymore). */
 function summarize(w: Workout): { sets: number; volume: number; minutes: number | null } {
@@ -53,10 +54,9 @@ export function History(): ReactElement {
 
 	return (
 		<div className="gymmd-view">
-			<div className="gymmd-header">
-				<h2>Workout history</h2>
+			<NavActions>
 				<button onClick={() => void refresh()}>Refresh</button>
-			</div>
+			</NavActions>
 
 			{entries.length === 0 ? (
 				<p className="gymmd-empty">No completed workouts yet.</p>

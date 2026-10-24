@@ -4,7 +4,7 @@ import type { TFile } from 'obsidian';
 import type { Exercise, Template } from '../../types';
 import { entryUid } from '../../utils/id';
 import { usePlugin } from '../context';
-import { promptText } from './prompts';
+import { chooseAction, promptText } from './prompts';
 import { NumberField } from '../components/number-field';
 
 interface Props {
@@ -145,6 +145,21 @@ export function TemplateEditor({ file, initial, onSaved, close }: Props): ReactE
 			[sets[setIndex], sets[j]] = [sets[j], sets[setIndex]];
 		});
 
+	/** Per-set actions live in one menu so the set table fits a phone screen. */
+	const setMenu = async (exIndex: number, setIndex: number, count: number) => {
+		const choice = await chooseAction(plugin.app, {
+			title: `Set ${setIndex + 1}`,
+			actions: [
+				...(setIndex > 0 ? [{ id: 'up', label: 'Move up' }] : []),
+				...(setIndex < count - 1 ? [{ id: 'down', label: 'Move down' }] : []),
+				{ id: 'delete', label: 'Delete', danger: true },
+			],
+		});
+		if (choice === 'up') moveSet(exIndex, setIndex, -1);
+		else if (choice === 'down') moveSet(exIndex, setIndex, 1);
+		else if (choice === 'delete') removeSet(exIndex, setIndex);
+	};
+
 	const editSet = (exIndex: number, setIndex: number, field: 'reps' | 'weight', value: number) =>
 		update((t) => {
 			t.exercises[exIndex].sets[setIndex][field] = value;
@@ -175,8 +190,8 @@ export function TemplateEditor({ file, initial, onSaved, close }: Props): ReactE
 			<div className="gymmd-header">
 				<h3>
 					{template.name}{' '}
-					<button className="gymmd-link" onClick={() => void onRename()}>
-						rename
+					<button className="gymmd-text-button" onClick={() => void onRename()}>
+						Rename
 					</button>
 				</h3>
 				<button className="mod-cta" onClick={() => void openPicker()}>
@@ -204,16 +219,28 @@ export function TemplateEditor({ file, initial, onSaved, close }: Props): ReactE
 					<div className="gymmd-exercise-head">
 						<strong>{ex.name}</strong>
 						<span className="gymmd-row-actions">
-							<button onClick={() => moveExercise(exIndex, -1)} disabled={exIndex === 0}>
+							<button
+								className="clickable-icon"
+								aria-label="Move exercise up"
+								onClick={() => moveExercise(exIndex, -1)}
+								disabled={exIndex === 0}
+							>
 								↑
 							</button>
 							<button
+								className="clickable-icon"
+								aria-label="Move exercise down"
 								onClick={() => moveExercise(exIndex, 1)}
 								disabled={exIndex === template.exercises.length - 1}
 							>
 								↓
 							</button>
-							<button onClick={() => removeExercise(exIndex)}>Remove</button>
+							<button
+								className="gymmd-text-button gymmd-text-danger"
+								onClick={() => removeExercise(exIndex)}
+							>
+								Remove
+							</button>
 						</span>
 					</div>
 
@@ -245,17 +272,14 @@ export function TemplateEditor({ file, initial, onSaved, close }: Props): ReactE
 												onChange={(v) => editSet(exIndex, setIndex, 'weight', v ?? 0)}
 											/>
 										</td>
-										<td className="gymmd-row-actions">
-											<button onClick={() => moveSet(exIndex, setIndex, -1)} disabled={setIndex === 0}>
-												↑
-											</button>
+										<td>
 											<button
-												onClick={() => moveSet(exIndex, setIndex, 1)}
-												disabled={setIndex === ex.sets.length - 1}
+												className="clickable-icon gymmd-set-menu"
+												aria-label="Set actions"
+												onClick={() => void setMenu(exIndex, setIndex, ex.sets.length)}
 											>
-												↓
+												⋯
 											</button>
-											<button onClick={() => removeSet(exIndex, setIndex)}>✕</button>
 										</td>
 									</tr>
 								))}

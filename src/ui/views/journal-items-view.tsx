@@ -7,6 +7,7 @@ import { usePlugin } from '../context';
 import { confirm } from '../modals/prompts';
 import { openReactModal } from '../modals/react-modal';
 import { JournalItemEditor } from '../modals/journal-item-editor';
+import { NavActions } from '../components/nav-actions';
 
 function summarize(it: JournalItem): string {
 	const fields = it.fields.length === 0 ? 'yes / no' : describeFields(it);
@@ -52,11 +53,24 @@ export function JournalItems(): ReactElement {
 		}
 	};
 
-	const openEditor = (initial: JournalItem, isNew: boolean, onSave: (it: JournalItem) => void) => {
+	const openEditor = (
+		initial: JournalItem,
+		isNew: boolean,
+		onSave: (it: JournalItem) => void,
+		onDelete?: () => void,
+	) => {
 		const title = isNew ? 'New journal item' : `Edit ${initial.name}`;
 		openReactModal(
 			plugin,
-			(close) => <JournalItemEditor initial={initial} isNew={isNew} onSave={onSave} close={close} />,
+			(close) => (
+				<JournalItemEditor
+					initial={initial}
+					isNew={isNew}
+					onSave={onSave}
+					onDelete={onDelete}
+					close={close}
+				/>
+			),
 			{ title },
 		);
 	};
@@ -78,8 +92,12 @@ export function JournalItems(): ReactElement {
 	};
 
 	const onEdit = (it: JournalItem) =>
-		openEditor(it, false, (edited) =>
-			void persist(items.map((x) => (x.item_id === it.item_id ? edited : x))),
+		openEditor(
+			it,
+			false,
+			(edited) => void persist(items.map((x) => (x.item_id === it.item_id ? edited : x))),
+			// Built-ins can only be disabled, not deleted.
+			it.builtin ? undefined : () => void onDelete(it),
 		);
 
 	const onToggle = (it: JournalItem) =>
@@ -106,13 +124,12 @@ export function JournalItems(): ReactElement {
 
 	return (
 		<div className="gymmd-view">
-			<div className="gymmd-header">
-				<h2>Journal items</h2>
+			<NavActions>
 				<button className="mod-cta" onClick={onAdd}>
-					Add item
+					Add
 				</button>
-			</div>
-			<p className="gymmd-muted">Only enabled items are shown in the journal.</p>
+			</NavActions>
+			<p className="gymmd-muted">Ticked items are asked in the journal. Tap an item to edit it.</p>
 
 			{loading ? (
 				<p>Loading…</p>
@@ -121,27 +138,36 @@ export function JournalItems(): ReactElement {
 			) : (
 				<ul className="gymmd-list">
 					{items.map((it, i) => (
-						<li key={it.item_id} className="gymmd-list-row">
-							<label className="gymmd-checkbox">
-								<input type="checkbox" checked={it.enabled} onChange={() => onToggle(it)} />
-								<span className={it.enabled ? '' : 'gymmd-muted'}>
-									<strong>{it.name}</strong>
-									<span className="gymmd-muted"> · {summarize(it)}</span>
+						<li key={it.item_id} className="gymmd-list-row gymmd-journal-item-row">
+							<input
+								type="checkbox"
+								aria-label={`Show ${it.name} in the journal`}
+								checked={it.enabled}
+								onChange={() => onToggle(it)}
+							/>
+							<button className="gymmd-row-main" onClick={() => onEdit(it)}>
+								<span className={it.enabled ? 'gymmd-row-title' : 'gymmd-row-title gymmd-muted'}>
+									{it.name}
 								</span>
-							</label>
+								<span className="gymmd-muted">{summarize(it)}</span>
+							</button>
 							<span className="gymmd-row-actions">
-								<button aria-label="Move up" disabled={i === 0} onClick={() => move(i, -1)}>
+								<button
+									className="clickable-icon"
+									aria-label="Move up"
+									disabled={i === 0}
+									onClick={() => move(i, -1)}
+								>
 									↑
 								</button>
 								<button
+									className="clickable-icon"
 									aria-label="Move down"
 									disabled={i === items.length - 1}
 									onClick={() => move(i, 1)}
 								>
 									↓
 								</button>
-								<button onClick={() => onEdit(it)}>Edit</button>
-								{!it.builtin && <button onClick={() => void onDelete(it)}>Delete</button>}
 							</span>
 						</li>
 					))}

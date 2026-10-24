@@ -4,8 +4,11 @@ import { NumberField } from '../components/number-field';
 /** Edit a single body-weight measurement (weight + date/time) in a modal. */
 interface Props {
 	initial: { weight: number | null; at: string };
+	/** Shown as the modal title by the caller. */
 	title: string;
 	onSave: (weight: number, at: string) => void;
+	/** Offered when editing an existing measurement. */
+	onDelete?: () => void;
 	close: () => void;
 }
 
@@ -14,7 +17,7 @@ function toLocal(at: string): string {
 	return at.slice(0, 16);
 }
 
-export function BodyWeightEditor({ initial, title, onSave, close }: Props): ReactElement {
+export function BodyWeightEditor({ initial, onSave, onDelete, close }: Props): ReactElement {
 	const [weight, setWeight] = useState<number | null>(initial.weight);
 	const [at, setAt] = useState<string>(toLocal(initial.at));
 
@@ -33,7 +36,6 @@ export function BodyWeightEditor({ initial, title, onSave, close }: Props): Reac
 
 	return (
 		<div className="gymmd-editor gymmd-bw-editor">
-			<h3>{title}</h3>
 			<label className="gymmd-bw-field">
 				<span>Weight (kg)</span>
 				<NumberField kind="weight" value={weight} onChange={setWeight} />
@@ -47,6 +49,17 @@ export function BodyWeightEditor({ initial, title, onSave, close }: Props): Reac
 					Save
 				</button>
 				<button onClick={close}>Cancel</button>
+				{onDelete && (
+					<button
+						className="mod-warning gymmd-footer-end"
+						onClick={() => {
+							close();
+							onDelete();
+						}}
+					>
+						Delete
+					</button>
+				)}
 			</div>
 		</div>
 	);

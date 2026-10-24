@@ -252,7 +252,9 @@ export function describeAnswer(a: JournalAnswer, date: ISODate): string {
 		return d === 0 ? toTimeInput(iso) : `${toTimeInput(iso)} (${d > 0 ? '+' : ''}${d}d)`;
 	};
 	if (a.time) parts.push(t(a.time));
-	if (a.start || a.end) parts.push(`${t(a.start) || '?'}–${t(a.end) || '?'}`);
+	if (a.start && a.end) parts.push(`${t(a.start)}–${t(a.end)}`);
+	else if (a.start) parts.push(`from ${t(a.start)}`);
+	else if (a.end) parts.push(`until ${t(a.end)}`);
 	if (a.duration_min !== null) parts.push(`${trimNum(a.duration_min)} min`);
 	if (a.count !== null) parts.push(`${trimNum(a.count)}${a.count_unit ? ` ${a.count_unit}` : ''}`);
 	if (a.dosage !== null) parts.push(`${trimNum(a.dosage)}${a.dosage_unit ? ` ${a.dosage_unit}` : ''}`);

@@ -53,6 +53,7 @@ function App({ initialRoute }: { initialRoute: Route | null }): ReactElement {
 		initialRoute && initialRoute !== 'home' ? ['home', initialRoute] : ['home'],
 	);
 	const route = stack[stack.length - 1];
+	const [actionsEl, setActionsEl] = useState<HTMLElement | null>(null);
 
 	const nav: NavApi = {
 		route,
@@ -60,6 +61,7 @@ function App({ initialRoute }: { initialRoute: Route | null }): ReactElement {
 		back: () => setStack((s) => (s.length > 1 ? s.slice(0, -1) : ['home'])),
 		home: () => setStack(['home']),
 		canGoBack: route !== 'home',
+		actionsEl,
 	};
 
 	return (
@@ -67,10 +69,11 @@ function App({ initialRoute }: { initialRoute: Route | null }): ReactElement {
 			<div className="gymmd-app">
 				{route !== 'home' && (
 					<div className="gymmd-navbar">
-						<button className="gymmd-back-button" onClick={nav.back}>
-							‹ Back
+						<button className="gymmd-back-button" aria-label="Back" onClick={nav.back}>
+							‹
 						</button>
 						<span className="gymmd-navbar-title">{TITLES[route]}</span>
+						<div className="gymmd-navbar-actions" ref={setActionsEl} />
 					</div>
 				)}
 				<Screen route={route} />

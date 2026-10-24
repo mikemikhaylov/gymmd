@@ -44,6 +44,9 @@ function parseDay(content: string): JournalDay | null {
  * synced), the write is aborted and the fresh data returned instead.
  */
 export class JournalStore {
+	/** In-flight loadItems, shared so concurrent callers can't both seed the file. */
+	private loadingItems: Promise<JournalItemsData> | null = null;
+
 	constructor(
 		private app: App,
 		private getSettings: () => GymMDSettings,
@@ -81,7 +84,12 @@ export class JournalStore {
 	}
 
 	/** Load item definitions, seeding the built-ins if the file doesn't exist yet. */
-	async loadItems(): Promise<JournalItemsData> {
+	loadItems(): Promise<JournalItemsData> {
+		this.loadingItems ??= this.doLoadItems().finally(() => (this.loadingItems = null));
+		return this.loadingItems;
+	}
+
+	private async doLoadItems(): Promise<JournalItemsData> {
 		const path = this.itemsPath();
 		const existing = getFile(this.app, path);
 		if (!existing) {

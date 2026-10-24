@@ -64,6 +64,9 @@ function parseBodyWeight(content: string): BodyWeightMeasurement[] {
 }
 
 export class BodyWeightStore {
+	/** In-flight load, shared so concurrent callers can't both create the file. */
+	private loading: Promise<BodyWeightData> | null = null;
+
 	constructor(
 		private app: App,
 		private getSettings: () => GymMDSettings,
@@ -79,7 +82,12 @@ export class BodyWeightStore {
 	}
 
 	/** Load (creating an empty log file if it doesn't exist yet). */
-	async load(): Promise<BodyWeightData> {
+	load(): Promise<BodyWeightData> {
+		this.loading ??= this.doLoad().finally(() => (this.loading = null));
+		return this.loading;
+	}
+
+	private async doLoad(): Promise<BodyWeightData> {
 		const path = this.path();
 		const existing = getFile(this.app, path);
 		if (!existing) {
