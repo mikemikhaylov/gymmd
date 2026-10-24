@@ -107,7 +107,7 @@ All build-order steps from PLAN.md §10 are implemented (v0.1.0):
 5. ✅ Active Workout view (`ui/views/active-workout-view.tsx`) — stopwatch + all-sets tabs, debounced autosave
 6. ✅ Finish flow (`ui/modals/finish-flow.ts`, `services/diff.ts`)
 7. ✅ History view (`ui/views/history-view.tsx`)
-8. ✅ Settings (`settings.ts`)
+8. ✅ Settings (`settings.ts`) — data folder + module toggles (`modules.strength/journal/bodyWeight`); UI reads them live via `useSettings()`
 
 Also implemented: Journal (PLAN.md §9b) — daily yes/no items with enable/disable, custom items, repeatable (multiple-per-day) items, copy-from-previous-day.
 

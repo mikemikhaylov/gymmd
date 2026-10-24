@@ -6,10 +6,12 @@
  *   seed=full|empty      sample data or a fresh vault (default: full)
  *   active=1             include an in-progress workout
  *   desktop=1            desktop layout instead of phone
+ *   disable=a,b          disable modules (strength, journal, bodyWeight)
+ *   settings=1           show the plugin's settings tab instead of the app
  */
 import { App } from 'obsidian';
 import GymMDPlugin from '../../src/main';
-import { DEFAULT_SETTINGS } from '../../src/settings';
+import { DEFAULT_SETTINGS, GymMDSettingTab } from '../../src/settings';
 import { resolvePaths } from '../../src/services/paths';
 import {
 	serializeExercise,
@@ -232,9 +234,23 @@ async function boot(): Promise<void> {
 	await seed();
 	const plugin = new GymMDPlugin(app as never, { id: 'gymmd', version: 'preview' } as never);
 	await plugin.onload();
+	const disabled = (params.get('disable') ?? '').split(',').filter(Boolean);
+	if (disabled.length) {
+		for (const m of disabled) (plugin.settings.modules as Record<string, boolean>)[m] = false;
+		await plugin.saveSettings();
+	}
+	(window as unknown as { gymmd: unknown }).gymmd = { app, plugin };
+	if (params.get('settings') === '1') {
+		const tab = new GymMDSettingTab(app as never, plugin);
+		leafContent.empty();
+		const content = leafContent.createDiv('view-content');
+		content.appendChild(tab.containerEl);
+		tab.display();
+		document.body.setAttr('data-ready', '1');
+		return;
+	}
 	const route = (params.get('route') ?? 'home') as Route;
 	await plugin.openApp(route === 'home' ? undefined : route);
-	(window as unknown as { gymmd: unknown }).gymmd = { app, plugin };
 	document.body.setAttr('data-ready', '1');
 }
 

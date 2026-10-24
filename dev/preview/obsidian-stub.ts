@@ -306,7 +306,7 @@ export abstract class ItemView extends Component {
 }
 
 export class PluginSettingTab {
-	containerEl = document.createElement('div');
+	containerEl = Object.assign(document.createElement('div'), { className: 'vertical-tab-content' });
 	constructor(
 		public app: App,
 		public plugin: Plugin,
@@ -413,6 +413,32 @@ export class ButtonComponent {
 	}
 }
 
+export class ToggleComponent {
+	toggleEl: HTMLElement;
+	private value = false;
+	private cb: ((v: boolean) => void) | null = null;
+	constructor(containerEl: HTMLElement) {
+		this.toggleEl = containerEl.createDiv('checkbox-container');
+		this.toggleEl.createEl('input', { attr: { type: 'checkbox', tabindex: '0' } });
+		this.toggleEl.addEventListener('click', () => {
+			this.setValue(!this.value);
+			this.cb?.(this.value);
+		});
+	}
+	setValue(v: boolean): this {
+		this.value = v;
+		this.toggleEl.toggleClass('is-enabled', v);
+		return this;
+	}
+	getValue(): boolean {
+		return this.value;
+	}
+	onChange(cb: (v: boolean) => void): this {
+		this.cb = cb;
+		return this;
+	}
+}
+
 export class Setting {
 	settingEl: HTMLElement;
 	infoEl: HTMLElement;
@@ -440,6 +466,14 @@ export class Setting {
 	}
 	addButton(cb: (b: ButtonComponent) => void): this {
 		cb(new ButtonComponent(this.controlEl));
+		return this;
+	}
+	addToggle(cb: (t: ToggleComponent) => void): this {
+		cb(new ToggleComponent(this.controlEl));
+		return this;
+	}
+	setHeading(): this {
+		this.settingEl.addClass('setting-item-heading');
 		return this;
 	}
 }

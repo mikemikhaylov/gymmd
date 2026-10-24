@@ -1,5 +1,5 @@
 import { Plugin } from 'obsidian';
-import { DEFAULT_SETTINGS, type GymMDSettings, GymMDSettingTab } from './settings';
+import { DEFAULT_SETTINGS, type GymMDSettings, GymMDSettingTab, type ModuleId } from './settings';
 import { ExerciseStore } from './services/exercise-store';
 import { TemplateStore, type TemplateEntry } from './services/template-store';
 import { WorkoutStore } from './services/workout-store';
@@ -22,6 +22,7 @@ export default class GymMDPlugin extends Plugin {
 	journal!: JournalStore;
 	/** Deep-link target read by the app view when it mounts. */
 	pendingRoute: Route | null = null;
+	private settingsListeners = new Set<() => void>();
 
 	async onload(): Promise<void> {
 		await this.loadSettings();
@@ -47,30 +48,48 @@ export default class GymMDPlugin extends Plugin {
 			name: 'Open GymMD',
 			callback: () => void this.openApp(),
 		});
+		// Hidden from the command palette while their module is disabled.
 		this.addCommand({
 			id: 'open-body-weight',
 			name: 'Track body weight',
-			callback: () => void this.openApp('bodyweight'),
+			checkCallback: (checking) => this.moduleCommand('bodyWeight', checking, 'bodyweight'),
 		});
 		this.addCommand({
 			id: 'open-journal',
 			name: 'Open journal',
-			callback: () => void this.openApp('journal'),
+			checkCallback: (checking) => this.moduleCommand('journal', checking, 'journal'),
 		});
 
 		this.addSettingTab(new GymMDSettingTab(this.app, this));
 	}
 
 	async loadSettings(): Promise<void> {
-		this.settings = Object.assign(
-			{},
-			DEFAULT_SETTINGS,
-			(await this.loadData()) as Partial<GymMDSettings>,
-		);
+		const saved = ((await this.loadData()) ?? {}) as Partial<GymMDSettings>;
+		this.settings = {
+			...DEFAULT_SETTINGS,
+			...saved,
+			// Merge per key so modules added later default to enabled.
+			modules: { ...DEFAULT_SETTINGS.modules, ...saved.modules },
+		};
 	}
 
 	async saveSettings(): Promise<void> {
+		// New object identity so subscribers (useSettings) re-render.
+		this.settings = { ...this.settings };
 		await this.saveData(this.settings);
+		this.settingsListeners.forEach((cb) => cb());
+	}
+
+	/** Subscribe to settings changes; returns an unsubscribe function. */
+	subscribeSettings(cb: () => void): () => void {
+		this.settingsListeners.add(cb);
+		return () => this.settingsListeners.delete(cb);
+	}
+
+	private moduleCommand(module: ModuleId, checking: boolean, route: Route): boolean {
+		if (!this.settings.modules[module]) return false;
+		if (!checking) void this.openApp(route);
+		return true;
 	}
 
 	/**

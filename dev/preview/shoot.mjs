@@ -63,6 +63,17 @@ const SCENARIOS = [
 	['active', 'route=active&active=1'],
 	['active-allsets', 'route=active&active=1', click('All sets')],
 	['empty-home', 'route=home&seed=empty'],
+	['home-no-strength', 'route=home&active=1&disable=strength'],
+	['home-strength-only', 'route=home&active=1&disable=journal,bodyWeight'],
+	['home-none', 'route=home&disable=strength,journal,bodyWeight'],
+	['settings', 'settings=1'],
+	// Toggling a module in settings re-renders an already-open Home live.
+	['home-live-toggle', 'route=home', async (p) =>
+		p.evaluate(async () => {
+			const { plugin } = window.gymmd;
+			plugin.settings.modules = { ...plugin.settings.modules, journal: false };
+			await plugin.saveSettings();
+		})],
 ];
 
 async function overflowReport(page) {
@@ -82,7 +93,8 @@ async function overflowReport(page) {
 	}, viewport.width);
 }
 
-rmSync(out, { recursive: true, force: true });
+// A filtered run only refreshes its own screenshots.
+if (!filter) rmSync(out, { recursive: true, force: true });
 mkdirSync(out, { recursive: true });
 const browser = await chromium.launch();
 const ctx = await browser.newContext(

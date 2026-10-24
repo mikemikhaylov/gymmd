@@ -393,7 +393,7 @@ A **Journal** screen (Home button + "Open journal" command) records daily yes/no
 5. **Active Workout view** — Tab 1 (stopwatch) and Tab 2 (all sets), timestamp-based timer, autosave on every mutation.
 6. **Finish flow** — diff against template, confirmation modal, file move to `completed/`.
 7. **History view** — list of completed workouts (tap a row to open the note); each row has a **Copy** button that copies the whole workout markdown file to the clipboard.
-8. **Settings** — a single **Data folder** (root) setting; the structure beneath it is fixed.
+8. **Settings** — a **Data folder** (root) setting (the structure beneath it is fixed) and **module toggles**: Strength training (templates, exercises, active workout, history, reports), Journal, Body weight — all on by default. Disabling a module only hides its Home buttons and commands; its data files are untouched and reappear when re-enabled.
 9. *(Later)* Exercise progress view / DataviewJS examples, bodyweight tracking, AI-coach-facing export helpers.
 
 ---
