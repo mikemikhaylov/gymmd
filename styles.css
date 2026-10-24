@@ -450,3 +450,146 @@
 .is-mobile .gymmd-stopwatch-footer {
 	padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
 }
+
+/* --- Journal --- */
+
+.gymmd-journal-datebar {
+	display: flex;
+	align-items: center;
+	gap: var(--size-4-2);
+	margin-bottom: var(--size-4-3);
+}
+
+.gymmd-journal-datebar input[type='date'] {
+	flex: 1;
+	min-width: 0;
+}
+
+.gymmd-journal-summary {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	gap: var(--size-4-2);
+	margin-bottom: var(--size-4-2);
+}
+
+.gymmd-journal-card {
+	margin: var(--size-4-3) 0;
+	padding: var(--size-4-3);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-m);
+	background: var(--background-secondary);
+}
+
+.gymmd-journal-answered {
+	border-color: var(--interactive-accent);
+}
+
+.gymmd-journal-card-head {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: var(--size-4-3);
+}
+
+.gymmd-journal-name {
+	font-weight: var(--font-semibold);
+	font-size: 1.05em;
+}
+
+.gymmd-journal-yesno {
+	display: inline-flex;
+	gap: var(--size-4-1);
+	flex-shrink: 0;
+}
+
+.gymmd-journal-yesno button {
+	min-width: 56px;
+}
+
+.gymmd-journal-copy {
+	display: block;
+	margin-top: var(--size-4-2);
+	padding: 0;
+	background: none;
+	box-shadow: none;
+	height: auto;
+	text-align: left;
+	white-space: normal;
+}
+
+.gymmd-journal-fields {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--size-4-3);
+	margin-top: var(--size-4-3);
+}
+
+.gymmd-journal-fields > label,
+.gymmd-journal-intensity-field {
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-4-1);
+	font-size: var(--font-ui-small);
+	color: var(--text-muted);
+}
+
+.gymmd-journal-fields input[type='text'] {
+	width: 96px;
+}
+
+.gymmd-journal-time,
+.gymmd-journal-dosage {
+	display: inline-flex;
+	gap: var(--size-4-1);
+	align-items: center;
+}
+
+.gymmd-journal-intensity-field,
+.gymmd-journal-note {
+	flex-basis: 100%;
+}
+
+.gymmd-journal-intensity {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--size-4-1);
+}
+
+.gymmd-journal-intensity button {
+	min-width: 36px;
+	padding: var(--size-4-1) var(--size-4-2);
+	font-variant-numeric: tabular-nums;
+}
+
+.gymmd-journal-note textarea {
+	width: 100%;
+	resize: vertical;
+}
+
+.gymmd-journal-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--size-4-1);
+}
+
+.gymmd-journal-occurrence {
+	margin-top: var(--size-4-3);
+	padding-top: var(--size-4-2);
+	border-top: 1px solid var(--background-modifier-border);
+}
+
+.gymmd-journal-occurrence-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.gymmd-journal-occurrence-head .gymmd-journal-copy {
+	margin-top: 0;
+}
+
+.gymmd-journal-add {
+	margin-top: var(--size-4-3);
+}

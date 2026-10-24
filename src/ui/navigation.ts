@@ -7,7 +7,9 @@ export type Route =
 	| 'history'
 	| 'active'
 	| 'reports'
-	| 'bodyweight';
+	| 'bodyweight'
+	| 'journal'
+	| 'journal-items';
 
 export interface NavApi {
 	route: Route;

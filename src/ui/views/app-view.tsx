@@ -9,6 +9,8 @@ import { History } from './history-view';
 import { ActiveWorkout } from './active-workout-view';
 import { Reports } from './reports-view';
 import { BodyWeight } from './body-weight-view';
+import { Journal } from './journal-view';
+import { JournalItems } from './journal-items-view';
 
 const TITLES: Record<Route, string> = {
 	home: 'GymMD',
@@ -18,6 +20,8 @@ const TITLES: Record<Route, string> = {
 	active: 'Active workout',
 	reports: 'Reports',
 	bodyweight: 'Body weight',
+	journal: 'Journal',
+	'journal-items': 'Journal items',
 };
 
 function Screen({ route }: { route: Route }): ReactElement {
@@ -34,6 +38,10 @@ function Screen({ route }: { route: Route }): ReactElement {
 			return <Reports />;
 		case 'bodyweight':
 			return <BodyWeight />;
+		case 'journal':
+			return <Journal />;
+		case 'journal-items':
+			return <JournalItems />;
 		case 'home':
 		default:
 			return <Home />;

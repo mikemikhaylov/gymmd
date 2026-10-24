@@ -1,11 +1,17 @@
 import {
 	TYPE_EXERCISE,
+	TYPE_JOURNAL,
+	TYPE_JOURNAL_ITEMS,
 	TYPE_TEMPLATE,
 	TYPE_WORKOUT,
 } from '../utils/constants';
 import { entryUid } from '../utils/id';
 import type {
 	Exercise,
+	JournalAnswer,
+	JournalDay,
+	JournalField,
+	JournalItem,
 	Template,
 	TemplateExercise,
 	TemplateSet,
@@ -15,6 +21,7 @@ import type {
 	WorkoutStatus,
 } from '../types';
 import { readBody } from './serializer';
+import { DOSAGE_UNITS, FIELD_ORDER, INTENSITY_MAX, sortFields } from './journal';
 
 type Rec = Record<string, unknown>;
 
@@ -146,5 +153,79 @@ export function workoutFromFrontmatter(fm: Rec): Workout | null {
 		completed: fm.completed ? asString(fm.completed) : null,
 		current_phase_started: fm.current_phase_started ? asString(fm.current_phase_started) : null,
 		exercises,
+	};
+}
+
+// --- Journal --------------------------------------------------------------
+
+/** Datetime string or null. YAML parses an unquoted timestamp as a UTC Date. */
+function asDateTimeOrNull(v: unknown): string | null {
+	if (v instanceof Date) return v.toISOString().slice(0, 19);
+	if (typeof v === 'string' && v.trim()) return v.trim();
+	return null;
+}
+
+function asStringOrNull(v: unknown): string | null {
+	const s = asString(v).trim();
+	return s ? s : null;
+}
+
+function journalFields(v: unknown): JournalField[] {
+	const raw = Array.isArray(v) ? v.map((f) => asString(f)) : [];
+	return sortFields(raw.filter((f): f is JournalField => (FIELD_ORDER as string[]).includes(f)));
+}
+
+function journalItem(it: Rec, index: number): JournalItem {
+	return {
+		item_id: asString(it.item_id),
+		name: asString(it.name),
+		hint: asString(it.hint),
+		builtin: asBool(it.builtin),
+		enabled: asBool(it.enabled, true),
+		repeatable: asBool(it.repeatable),
+		order: asNumber(it.order, index + 1),
+		fields: journalFields(it.fields),
+		count_unit: asString(it.count_unit),
+		// Only written when the item has a dosage field; default for when it's enabled later.
+		dosage_unit: asString(it.dosage_unit) || DOSAGE_UNITS[0],
+	};
+}
+
+export function journalItemsFromFrontmatter(fm: Rec): JournalItem[] | null {
+	if (!isType(fm, TYPE_JOURNAL_ITEMS)) return null;
+	return asArray(fm.items)
+		.map(journalItem)
+		.filter((it) => it.item_id)
+		.sort((a, b) => a.order - b.order);
+}
+
+function journalAnswer(a: Rec): JournalAnswer {
+	const intensity = asNumberOrNull(a.intensity);
+	return {
+		item_id: asString(a.item_id),
+		name: asString(a.name),
+		answer: asBool(a.answer, true),
+		time: asDateTimeOrNull(a.time),
+		start: asDateTimeOrNull(a.start),
+		end: asDateTimeOrNull(a.end),
+		duration_min: asNumberOrNull(a.duration_min),
+		count: asNumberOrNull(a.count),
+		count_unit: asStringOrNull(a.count_unit),
+		dosage: asNumberOrNull(a.dosage),
+		dosage_unit: asStringOrNull(a.dosage_unit),
+		intensity: intensity === null ? null : Math.min(INTENSITY_MAX, Math.max(1, Math.round(intensity))),
+		note: asString(a.note),
+	};
+}
+
+export function journalDayFromFrontmatter(fm: Rec): JournalDay | null {
+	if (!isType(fm, TYPE_JOURNAL)) return null;
+	return {
+		type: TYPE_JOURNAL,
+		date: asDateString(fm.date),
+		updated: asDateTimeOrNull(fm.updated),
+		entries: asArray(fm.entries)
+			.map(journalAnswer)
+			.filter((a) => a.item_id),
 	};
 }

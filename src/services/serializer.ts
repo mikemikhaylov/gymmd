@@ -1,6 +1,8 @@
 import { parseYaml } from 'obsidian';
-import type { Exercise, Template, Workout } from '../types';
+import type { Exercise, JournalDay, JournalItem, Template, Workout } from '../types';
+import { TYPE_JOURNAL, TYPE_JOURNAL_ITEMS } from '../utils/constants';
 import { timeOfDay } from '../utils/date';
+import { describeAnswer, FIELD_LABELS, INTENSITY_MAX } from './journal';
 
 /**
  * Serialization is one-directional: data -> file. The markdown body is
@@ -150,6 +152,100 @@ export function serializeWorkout(w: Workout, title: string): string {
 	}
 
 	return wrapFrontmatter(bodyParts.join('\n').trimEnd() + '\n', fm);
+}
+
+// --- Journal --------------------------------------------------------------
+
+/** Schema notes written into journal bodies so a human or AI reader can interpret the YAML. */
+export const JOURNAL_NOTE =
+	'> Generated from the frontmatter (the source of truth — edit the YAML, not this table). ' +
+	'`answer: true/false` = yes/no; unanswered items are omitted; a repeatable item has one entry per occurrence. Times are local ISO datetimes ' +
+	`(an end before the start rolls to the next day); \`duration_min\` is minutes; \`intensity\` is 1–${INTENSITY_MAX}. ` +
+	'Each answer carries its item name and units; `item_id` joins it to `journal/items.md`.';
+
+function tableCell(s: string): string {
+	return s.replace(/\|/g, '\\|').replace(/\n/g, ' ');
+}
+
+export function serializeJournalItems(items: JournalItem[]): string {
+	const fm = [line(0, 'type', TYPE_JOURNAL_ITEMS), 'items:'];
+	for (const it of items) {
+		fm.push(`  - ${line(0, 'item_id', it.item_id).trimStart()}`);
+		fm.push(line(2, 'name', it.name));
+		if (it.hint) fm.push(line(2, 'hint', it.hint));
+		fm.push(line(2, 'builtin', it.builtin));
+		fm.push(line(2, 'enabled', it.enabled));
+		fm.push(line(2, 'repeatable', it.repeatable));
+		fm.push(line(2, 'order', it.order));
+		fm.push(`    fields: [${it.fields.join(', ')}]`);
+		if (it.fields.includes('count')) fm.push(line(2, 'count_unit', it.count_unit));
+		if (it.fields.includes('dosage')) fm.push(line(2, 'dosage_unit', it.dosage_unit));
+	}
+
+	const body = [
+		'# Journal items',
+		'',
+		'> Definitions of the daily journal questions. Disabled items are hidden from the journal; their past answers are kept. Repeatable items may have several answers per day. ' +
+			'Fields: `time`, `start`, `end`, `duration` (minutes), `count` (portions in `count_unit`), ' +
+			`\`dosage\` (in \`dosage_unit\`), \`intensity\` (1–${INTENSITY_MAX}), \`note\`.`,
+		'',
+		'| Item | Enabled | Repeatable | Asks for | Units |',
+		'|---|---|---|---|---|',
+	];
+	for (const it of items) {
+		const asks = it.fields.length ? it.fields.map((f) => FIELD_LABELS[f]).join(', ') : 'yes / no';
+		const units = [
+			it.fields.includes('count') ? it.count_unit : '',
+			it.fields.includes('dosage') ? it.dosage_unit : '',
+		]
+			.filter(Boolean)
+			.join(', ');
+		body.push(
+			`| ${tableCell(it.name)} | ${it.enabled ? '✅' : '⬜'} | ${it.repeatable ? '✅' : '⬜'} | ${asks} | ${tableCell(units)} |`,
+		);
+	}
+	return wrapFrontmatter(body.join('\n') + '\n', fm);
+}
+
+export function serializeJournalDay(day: JournalDay): string {
+	const fm = [
+		line(0, 'type', TYPE_JOURNAL),
+		// Quoted so YAML keeps it a string rather than parsing a Date.
+		`date: ${JSON.stringify(day.date)}`,
+		line(0, 'updated', day.updated),
+		'entries:',
+	];
+	for (const a of day.entries) {
+		fm.push(`  - ${line(0, 'item_id', a.item_id).trimStart()}`);
+		fm.push(line(2, 'name', a.name));
+		fm.push(line(2, 'answer', a.answer));
+		// Only emit what was recorded, so files stay small and every key is meaningful.
+		if (a.time) fm.push(line(2, 'time', a.time));
+		if (a.start) fm.push(line(2, 'start', a.start));
+		if (a.end) fm.push(line(2, 'end', a.end));
+		if (a.duration_min !== null) fm.push(line(2, 'duration_min', a.duration_min));
+		if (a.count !== null) {
+			fm.push(line(2, 'count', a.count));
+			if (a.count_unit) fm.push(line(2, 'count_unit', a.count_unit));
+		}
+		if (a.dosage !== null) {
+			fm.push(line(2, 'dosage', a.dosage));
+			if (a.dosage_unit) fm.push(line(2, 'dosage_unit', a.dosage_unit));
+		}
+		if (a.intensity !== null) fm.push(line(2, 'intensity', a.intensity));
+		if (a.note) fm.push(line(2, 'note', a.note));
+	}
+
+	const body = [`# Journal ${day.date}`, '', JOURNAL_NOTE, ''];
+	if (day.entries.length) {
+		body.push('| Item | Answer | Details |', '|---|---|---|');
+		for (const a of day.entries) {
+			body.push(
+				`| ${tableCell(a.name)} | ${a.answer ? 'Yes' : 'No'} | ${tableCell(describeAnswer(a, day.date))} |`,
+			);
+		}
+	}
+	return wrapFrontmatter(body.join('\n').trimEnd() + '\n', fm);
 }
 
 // --- Reading (frontmatter only) -------------------------------------------

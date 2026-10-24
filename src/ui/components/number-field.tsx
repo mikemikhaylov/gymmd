@@ -4,6 +4,7 @@ import { type ReactElement, useEffect, useState } from 'react';
  * Validated numeric input.
  *  - kind="reps":   positive integer, 1–999 (no decimals).
  *  - kind="weight": ≥ 0, at most 2 decimal places (e.g. 1.75 ok, 1.757 not).
+ *  - kind="amount": same rules as weight, for generic quantities (minutes, mg…).
  *
  * Kept as a text input with its own draft string so partial values like "1."
  * can be typed; the numeric value is propagated as it becomes valid, and the
@@ -12,19 +13,21 @@ import { type ReactElement, useEffect, useState } from 'react';
 interface Props {
 	value: number | null;
 	onChange: (value: number | null) => void;
-	kind: 'reps' | 'weight';
+	kind: 'reps' | 'weight' | 'amount';
 	className?: string;
+	placeholder?: string;
 }
 
 // Keystroke-level filters (allow partial input while typing).
 const ALLOWED: Record<Props['kind'], RegExp> = {
 	reps: /^\d{0,3}$/,
 	weight: /^\d{0,5}(\.\d{0,2})?$/,
+	amount: /^\d{0,5}(\.\d{0,2})?$/,
 };
 
 const MAX_WEIGHT = 99999.99;
 
-export function NumberField({ value, onChange, kind, className }: Props): ReactElement {
+export function NumberField({ value, onChange, kind, className, placeholder }: Props): ReactElement {
 	const [text, setText] = useState(value === null ? '' : String(value));
 	const [focused, setFocused] = useState(false);
 
@@ -58,6 +61,7 @@ export function NumberField({ value, onChange, kind, className }: Props): ReactE
 			inputMode={kind === 'reps' ? 'numeric' : 'decimal'}
 			enterKeyHint="done"
 			className={className}
+			placeholder={placeholder}
 			value={text}
 			onFocus={() => setFocused(true)}
 			onBlur={() => {

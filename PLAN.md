@@ -43,6 +43,10 @@ Templates and Workouts are **separate files**, not one object with a status fiel
     reports/
       2026-06-27 Report.md            ← generated progress reports
   body_weight.md                      ← body-weight log (all measurements)
+  journal/
+    items.md                          ← journal question definitions (built-in + custom)
+    days/
+      2026-10-24.md                   ← one file per journaled day
 ```
 
 - **Only the root (`<root>`) is configurable** — a single "Data folder" setting (default empty = vault root). Everything below it (`workouts/`, the sub-folders, `body_weight.md`) is a **fixed** structure. File names keep their natural casing (`Push Day.md`).
@@ -366,6 +370,17 @@ A **Body weight** screen (Home button + "Track body weight" command) logs body-w
 - **File**: frontmatter is the source of truth — `type: body-weight-log` + a `measurements` array of `{ id, weight (kg), at (ISO datetime) }`, newest first; the body is a generated `Date | Time | Weight` table. Same "frontmatter = truth, body = view" model as workouts (§11).
 - **Screen**: lists measurements newest-first; **Add** logs a new one (pre-filled with the latest weight + now). Each row has **Edit** (popup for weight + date/time; weight validated ≥0, ≤2 decimals) and **Delete** (with confirmation). The file is created on first open if missing.
 - **Concurrency guard**: before every write, the store re-reads the file and compares it to the content it last loaded/wrote. If they differ (edited elsewhere / synced), it **aborts the write, reloads, and notifies** instead of clobbering — so a sync race can't lose data.
+
+---
+
+## 9b. Journal (Whoop-style daily habits & symptoms)
+
+A **Journal** screen (Home button + "Open journal" command) records daily yes/no questions with optional details, so habits, recovery and symptoms can later be graphed or analysed by an AI agent alongside training data.
+
+- **Items** (`journal/items.md`, `type: journal-items`): each item has a stable `item_id`, `name`, optional `hint`, `enabled`, `repeatable`, `order`, and the `fields` asked for when answered "yes": `time`, `start`, `end`, `duration` (min), `count` (portions in `count_unit`), `dosage` (in `dosage_unit`: mg, mcg, g, ml, IU, drops, capsules, tablets, scoops), `intensity` (1–10), `note`. Built-ins (seeded on first open, editable/disableable, not deletable): **Caffeine** (time of last cup + cups), **Cold shower** (time + minutes), **Sauna** (time stopped + minutes), **Mobility / stretching** (time + minutes + note, repeatable), **Late meal** (time of last meal), **Sick / illness** (intensity + note), **Meditation / breathwork** (time + minutes, repeatable). Built-ins added in later versions are appended to an existing `items.md` on load. Custom items start from presets (yes/no, symptom, supplement/medication, activity, food/drink — symptom/supplement/activity default to repeatable) and any field combination. A **repeatable** item can be logged several times per day (two headaches, two doses): each occurrence is its own entry with the same `item_id`, kept in logged order; caffeine/cold shower/sauna are not repeatable (caffeine records the last cup + total). **Disabled items are not shown** in the journal; their past answers stay in the day files.
+- **Days** (`journal/days/YYYY-MM-DD.md`, `type: journal`): `date`, `updated`, and `entries` — one per answered item with `item_id`, snapshotted `name`, `answer: true/false` (explicit "no" ≠ unanswered; unanswered items are omitted), and only the recorded fields. Units are snapshotted per answer and times are full local ISO datetimes (an end before the start rolls to the next day), so each file is self-describing for graphs/AI without joining the item file. The body is a generated `Item | Answer | Details` table plus a schema note.
+- **Screen**: date bar (‹ date ›, capped at today), one card per enabled item with Yes/No (tap again to clear) revealing its fields (repeatable items add **+ Add another** and per-occurrence **Remove**; answering No or clearing with several occurrences asks for confirmation); "Now" fills a time on today; with start+end+duration, duration is derived from the span. **Copy from previous**: per card ("↺ Same as Fri, Oct 23 …") and for the whole day ("Fill N from …", only unanswered items) — using the most recent earlier journaled day, with times re-anchored to the current date.
+- **Writes**: debounced autosave per day, serialized, and conflict-checked like the body-weight log (abort + reload + notice if the file changed on disk). A day file is only created once something is answered.
 
 ---
 
