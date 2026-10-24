@@ -16,6 +16,15 @@ export class ReactModal extends Modal {
 		super(plugin.app);
 		if (opts?.title) this.titleEl.setText(opts.title);
 		if (opts?.wide) this.modalEl.addClass('gymmd-wide-modal');
+		this.containerEl.addClass('gymmd-modal-container');
+		// Enter in a text field closes the on-screen keyboard instead of doing nothing.
+		this.contentEl.addEventListener('keydown', (e) => {
+			const t = e.target;
+			if (e.key === 'Enter' && t instanceof HTMLInputElement && t.type === 'text') {
+				e.preventDefault();
+				t.blur();
+			}
+		});
 	}
 
 	onOpen(): void {

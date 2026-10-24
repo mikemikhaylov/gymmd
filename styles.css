@@ -258,9 +258,19 @@
 	width: min(720px, 90vw);
 }
 
-.gymmd-editor {
-	max-height: 70vh;
+/* .modal-content is the only scroller (no nested scroll areas, which trap touch
+   scrolling on phones). On phones the on-screen keyboard overlays the app; Obsidian
+   exposes its height as --keyboard-height, so keep the modal above it. */
+.gymmd-modal-container .modal-content {
+	min-height: 0;
 	overflow-y: auto;
+	/* The sticky footer supplies the bottom spacing, so nothing scrolls visibly beneath it. */
+	padding-bottom: 0;
+}
+
+.is-phone .modal-container.gymmd-modal-container {
+	--dialog-max-height: calc(100vh - var(--safe-area-inset-top) - var(--keyboard-height));
+	bottom: var(--keyboard-height);
 }
 
 .gymmd-footer {
@@ -270,7 +280,7 @@
 	position: sticky;
 	bottom: 0;
 	background: var(--modal-background, var(--background-primary));
-	padding: var(--size-4-2) 0;
+	padding: var(--size-4-2) 0 var(--size-4-4);
 }
 
 .gymmd-footer-end {

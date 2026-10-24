@@ -45,11 +45,17 @@ const SCENARIOS = [
 	['journal-empty', 'route=journal&seed=empty'],
 	['journal-items', 'route=journal-items'],
 	['journal-item-new', 'route=journal-items', click('Add')],
+	// Simulated on-screen keyboard: the form must stay above it and scroll.
+	['journal-item-new-keyboard', 'route=journal-items', click('Add'), async (p) =>
+		p.evaluate(() => {
+			document.body.style.setProperty('--keyboard-height', '300px');
+			document.querySelector('.modal .modal-content')?.scrollBy(0, 1000);
+		})],
 	['journal-item-edit', 'route=journal-items', async (p) =>
 		p.locator('.gymmd-row-main', { hasText: 'Headache' }).click()],
 	['journal-item-edit-scrolled', 'route=journal-items', async (p) =>
 		p.locator('.gymmd-row-main', { hasText: 'Headache' }).click(), async (p) =>
-		p.evaluate(() => document.querySelector('.modal .gymmd-editor')?.scrollBy(0, 1000))],
+		p.evaluate(() => document.querySelector('.modal .modal-content')?.scrollBy(0, 1000))],
 	['active-set-menu', 'route=active&active=1', click('All sets'), async (p) =>
 		p.locator('.gymmd-set-menu').first().click()],
 	['finish-confirm', 'route=active&active=1', click('Finish')],
